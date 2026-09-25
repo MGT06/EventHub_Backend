@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
+	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -31,7 +33,7 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	if err := a.as.Register(ctx, newAccount); err != nil {
+	if err := a.as.Register(ctx.Request.Context(), newAccount); err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
@@ -43,5 +45,45 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, dto.Response{
 		Success: true,
 		Message: "Account created successfully",
+	})
+}
+
+func (a *AuthHandler) Login(ctx *gin.Context) {
+	var account dto.Login
+	if err := ctx.ShouldBindWith(&account, binding.JSON); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+	}
+
+	token, err := a.as.Login(ctx.Request.Context(), account)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
+			ctx.JSON(http.StatusBadRequest, dto.Response{
+				Success: false,
+				Message: "Please fill in all required fields",
+			})
+		}
+		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
+			ctx.JSON(http.StatusUnauthorized, dto.Response{
+				Success: false,
+				Message: err.Error(),
+			})
+		}
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Data: gin.H{
+			"token": token,
+		},
+		Message: "Login Success",
 	})
 }
