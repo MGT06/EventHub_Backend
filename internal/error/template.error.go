@@ -1,0 +1,6 @@
+package errorTemplate
+
+import "fmt"
+
+var ErrInvalidInputs = fmt.Errorf("invalid inputs")
+var ErrEmailPasswordIncorrect = fmt.Errorf("email or password are incorrect")
