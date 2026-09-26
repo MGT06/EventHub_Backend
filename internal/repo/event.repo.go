@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/model"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -58,4 +59,20 @@ GROUP BY e.id, a.name, e.title, e.description, e.image_event_url, e.start_at, e.
 	}
 
 	return events, nil
+}
+
+func (e *EventRepo) JoinEvent(ctx context.Context, idUser int, idEvent int) error {
+	query := "INSERT INTO join_event (account_id, event_id) VALUES ($1, $2)"
+	args := []any{idUser, idEvent}
+
+	cmt, err := e.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
 }
