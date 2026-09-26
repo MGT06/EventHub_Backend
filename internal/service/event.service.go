@@ -79,3 +79,28 @@ func (e *EventService) GetUpComingEvents(ctx context.Context) ([]dto.Event, erro
 
 	return data, nil
 }
+
+func (e *EventService) GetMyEvent(ctx context.Context, idUser int) ([]dto.Event, error) {
+	res, err := e.er.GetMyEvent(ctx, idUser)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]dto.Event, 0, len(res))
+	for _, v := range res {
+		data = append(data, dto.Event{
+			Id: v.Id_event,
+			OrganizerName: v.Name,
+			Title: v.Title,
+			Description: v.Description,
+			Image_url: v.Image_event_url,
+			Format: v.Format,
+			Location: v.City,
+			Capacity: v.Capacity,
+			Speakers: v.Speakers,
+			Categories: v.Category_name,
+		})
+	}
+
+	return data, nil
+}
