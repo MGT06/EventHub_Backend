@@ -53,5 +53,6 @@ func CheckToken(c *gin.Context) {
 		})
 		return
 	}
+	c.Set("idUser", token.Id)
 	c.Next()
 }
