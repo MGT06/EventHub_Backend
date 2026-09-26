@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
+	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
 )
 
@@ -40,4 +41,16 @@ func (e *EventService) GetAllEvents(ctx context.Context) ([]dto.Event, error) {
 	}
 
 	return data, nil
+}
+
+func (e *EventService) JoinEvent(ctx context.Context, idUser int, idEvent int) error {
+	if idUser == 0 || idEvent == 0 {
+		return errorTemplate.ErrInvalidInputs
+	}
+
+	if err := e.er.JoinEvent(ctx, idUser, idEvent); err != nil {
+		return err
+	}
+
+	return nil
 }
