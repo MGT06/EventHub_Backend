@@ -56,6 +56,7 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 			Success: false,
 			Message: "A system error has occurred",
 		})
+		return
 	}
 
 	token, err := a.as.Login(ctx.Request.Context(), account)
@@ -66,17 +67,20 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 				Success: false,
 				Message: "Please fill in all required fields",
 			})
+			return
 		}
 		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
 			ctx.JSON(http.StatusUnauthorized, dto.Response{
 				Success: false,
 				Message: err.Error(),
 			})
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
 			Message: "A system error has occurred",
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusOK, dto.Response{
