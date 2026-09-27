@@ -17,8 +17,8 @@ func NewCommunityService(cr *repo.CommunityRepo) *CommunityService {
 	}
 }
 
-func (c *CommunityService) GetAllCommunity(ctx context.Context) ([]dto.Community, error) {
-	res, err := c.cr.GetAllCommunity(ctx)
+func (c *CommunityService) GetCommunity(ctx context.Context, communityId int) ([]dto.Community, error) {
+	res, err := c.cr.GetCommunity(ctx, communityId)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +31,43 @@ func (c *CommunityService) GetAllCommunity(ctx context.Context) ([]dto.Community
 			Description:    v.Description,
 			Image_url:      v.Image_community_url,
 			Category:       v.Category_name,
+		})
+	}
+
+	return data, nil
+}
+
+func (c *CommunityService) GetCommunityBySearchFilter(ctx context.Context, search string, filter string) ([]dto.Community, error) {
+	res, err := c.cr.GetCommunityBySearchFilter(ctx, search, filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]dto.Community, 0, len(res))
+	for _, v := range res {
+		data = append(data, dto.Community{
+			Id:             v.Id_community,
+			Community_name: v.Community_name,
+			Description:    v.Description,
+			Image_url:      v.Image_community_url,
+			Category:       v.Category_name,
+		})
+	}
+
+	return data, nil
+}
+
+func (c *CommunityService) GetCommunityMembers(ctx context.Context, communityId int) ([]dto.CommunityMembers, error) {
+	res, err := c.cr.GetCommunityMembers(ctx, communityId)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]dto.CommunityMembers, 0, len(res))
+	for _, v := range res {
+		data = append(data, dto.CommunityMembers{
+			MemberName: v.Name,
 		})
 	}
 

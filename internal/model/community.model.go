@@ -15,3 +15,8 @@ type CommunityDetail struct {
 	Community
 	category
 }
+
+type CommunityMembers struct {
+	Community
+	Account
+}

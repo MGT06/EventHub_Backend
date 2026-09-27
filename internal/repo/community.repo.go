@@ -17,14 +17,16 @@ func NewCommunityRepo(db *pgxpool.Pool) *CommunityRepo {
 	}
 }
 
-func (c *CommunityRepo) GetAllCommunity(ctx context.Context) ([]model.CommunityDetail, error) {
+func (c *CommunityRepo) GetCommunity(ctx context.Context, communityId int) ([]model.CommunityDetail, error) {
 	query := `SELECT c.id, c.community_name, c.description, c.image_community_url, STRING_AGG(cg.category_name, ', ') AS "category" 
 FROM communities c 
 JOIN community_categories cc ON c.id = cc.community_id
 JOIN categories cg ON cg.id = cc.category_id
+WHERE c.id = $1
 GROUP BY  c.id, c.community_name, c.description, c.image_community_url`
 
-	res, err := c.db.Query(ctx, query)
+	args := []any{communityId}
+	res, err := c.db.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -44,4 +46,62 @@ GROUP BY  c.id, c.community_name, c.description, c.image_community_url`
 	}
 
 	return communities, nil
+}
+
+func (c *CommunityRepo) GetCommunityBySearchFilter(ctx context.Context, search string, filter string) ([]model.CommunityDetail, error) {
+	query := `SELECT c.id, c.community_name, c.description, c.image_community_url, STRING_AGG(cg.category_name, ', ') AS "category" 
+FROM communities c 
+JOIN community_categories cc ON c.id = cc.community_id
+JOIN categories cg ON cg.id = cc.category_id
+WHERE c.community_name ILIKE $1
+GROUP BY  c.id, c.community_name, c.description, c.image_community_url
+HAVING STRING_AGG(cg.category_name, ', ') ILIKE $2;`
+	args := []any{"%" + search + "%", "%" + filter + "%"}
+
+	res, err := c.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	var communities []model.CommunityDetail
+
+	for res.Next() {
+		var community model.CommunityDetail
+		if err := res.Scan(&community.Id_community, &community.Community_name, &community.Description, &community.Image_community_url, &community.Category_name); err != nil {
+			return nil, err
+		}
+		communities = append(communities, community)
+	}
+
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	return communities, nil
+}
+
+func (c *CommunityRepo) GetCommunityMembers(ctx context.Context, communityId int) ([]model.CommunityMembers, error) {
+	query := "SELECT a.name FROM community_members cm JOIN accounts a ON a.id = cm.account_id WHERE cm.community_id = $1"
+	args := []any{communityId}
+
+	res, err := c.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	
+	var communityMembers []model.CommunityMembers
+	for res.Next() {
+		var member model.CommunityMembers
+		if err := res.Scan(&member.Name); err != nil {
+			return nil, err
+		}
+
+		communityMembers = append(communityMembers, member)
+	}
+
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	return communityMembers, nil
 }

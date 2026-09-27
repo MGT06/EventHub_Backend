@@ -7,3 +7,7 @@ type Community struct {
 	Image_url      string `json:"image_url"`
 	Category       string `json:"category"`
 }
+
+type CommunityMembers struct {
+	MemberName string `json:"member_name"`
+}
