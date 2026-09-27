@@ -16,7 +16,3 @@ type Event struct {
 	Speakers      string    `json:"speakers"`
 	Categories    string    `json:"categories"`
 }
-
-type JoinEvent struct {
-	Id_Event int `json:"id_event"`
-}

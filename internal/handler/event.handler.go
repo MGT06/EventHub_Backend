@@ -8,7 +8,6 @@ import (
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type EventHandler struct {
@@ -75,7 +74,16 @@ func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
 
 }
 
-func (e *EventHandler) JoinEvent(ctx *gin.Context) {
+func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
+	idEvent, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
@@ -84,10 +92,9 @@ func (e *EventHandler) JoinEvent(ctx *gin.Context) {
 		})
 		return
 	}
-
-	var body dto.JoinEvent
-	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
-		log.Println(err)
+	isJoin, er := e.es.ToggleJoinEvent(ctx.Request.Context(), idUser.(int), idEvent)
+	if er != nil {
+		log.Println(er)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
 			Message: "A system error has occurred",
@@ -95,12 +102,10 @@ func (e *EventHandler) JoinEvent(ctx *gin.Context) {
 		return
 	}
 
-	err := e.es.JoinEvent(ctx.Request.Context(), idUser.(int), body.Id_Event)
-	if err != nil {
-		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
-			Success: false,
-			Message: "A system error has occurred",
+	if isJoin {
+		ctx.JSON(http.StatusOK, dto.Response{
+			Success: true,
+			Message: "Success Leave Event",
 		})
 		return
 	}

@@ -127,6 +127,36 @@ func (e *EventRepo) JoinEvent(ctx context.Context, idUser int, idEvent int) erro
 	return nil
 }
 
+func (e *EventRepo) LeaveEvent(ctx context.Context, idUser int, idEvent int) error {
+	query := "DELETE FROM join_event WHERE account_id = $1 AND event_id = $2"
+	args := []any{idUser, idEvent}
+
+	cmt, err := e.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
+func (e *EventRepo) IsJoin(ctx context.Context, idUser int, idEvent int) (bool, error) {
+	query := "SELECT EXISTS (SELECT 1 FROM join_event WHERE account_id = $1 AND event_id = $2)"
+	args := []any{idUser, idEvent}
+
+	res := e.db.QueryRow(ctx, query, args...)
+	
+	var isJoin bool
+	if err := res.Scan(&isJoin); err != nil {
+		return false, err
+	}
+
+	return isJoin, nil
+}
+
 func (e *EventRepo) GetUpComingEvents(ctx context.Context) ([]model.EventDetail, error) {
 	query := `SELECT e.id,
 	   a.name,

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
-	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
 )
 
@@ -69,16 +68,24 @@ func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string
 	return data, nil
 }
 
-func (e *EventService) JoinEvent(ctx context.Context, idUser int, idEvent int) error {
-	if idUser == 0 || idEvent == 0 {
-		return errorTemplate.ErrInvalidInputs
+func (e *EventService) ToggleJoinEvent(ctx context.Context, idUser int, idEvent int) (bool, error) {
+	isJoin, err := e.er.IsJoin(ctx, idUser, idEvent)
+	if err != nil {
+		return false, err
+	}
+
+	if isJoin {
+		if err := e.er.LeaveEvent(ctx, idUser, idEvent); err != nil {
+			return false, err
+		}
+		return isJoin, nil
 	}
 
 	if err := e.er.JoinEvent(ctx, idUser, idEvent); err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return isJoin, nil
 }
 
 func (e *EventService) GetUpComingEvents(ctx context.Context) ([]dto.Event, error) {
