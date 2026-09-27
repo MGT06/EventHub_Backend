@@ -16,7 +16,7 @@ func CheckToken(c *gin.Context) {
 	if bearer == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, dto.Response{
 			Success: false,
-			Message:     "please login first",
+			Message: "please login first",
 		})
 		return
 	}
@@ -54,5 +54,25 @@ func CheckToken(c *gin.Context) {
 		return
 	}
 	c.Set("idUser", token.Id)
+	c.Set("role", token.Role)
 	c.Next()
+}
+
+func OrganizerAccess(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "login first",
+		})
+		return
+	}
+
+	if role != "organizer" {
+		c.AbortWithStatusJSON(http.StatusForbidden, dto.Response{
+			Success: false,
+			Message: "no privilege",
+		})
+		return
+	}
 }
