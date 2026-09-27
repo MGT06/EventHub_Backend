@@ -71,6 +71,50 @@ func (c *CommunityHandler) GetCommunityBySearchFilter(ctx *gin.Context) {
 
 }
 
+func (e *CommunityHandler) ToggleJoinCommunity(ctx *gin.Context) {
+	idCommunity, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+	
+	isJoin, er := e.cs.ToggleJoinCommunity(ctx.Request.Context(), idUser.(int), idCommunity)
+	if er != nil {
+		log.Println(er)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	if isJoin {
+		ctx.JSON(http.StatusOK, dto.Response{
+			Success: true,
+			Message: "Success Leave Event",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Success Join Event",
+	})
+}
+
+
 func (c *CommunityHandler) GetCommunityMembers(ctx *gin.Context) {
 	communityId := ctx.Param("id")
 	id, err := strconv.Atoi(communityId)

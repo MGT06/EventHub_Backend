@@ -58,6 +58,27 @@ func (c *CommunityService) GetCommunityBySearchFilter(ctx context.Context, searc
 	return data, nil
 }
 
+
+func (e *CommunityService) ToggleJoinCommunity(ctx context.Context, idUser int, idCommunity int) (bool, error) {
+	isJoin, err := e.cr.IsJoin(ctx, idUser, idCommunity)
+	if err != nil {
+		return false, err
+	}
+
+	if isJoin {
+		if err := e.cr.LeaveCommunity(ctx, idUser, idCommunity); err != nil {
+			return false, err
+		}
+		return isJoin, nil
+	}
+
+	if err := e.cr.JoinCommunity(ctx, idUser, idCommunity); err != nil {
+		return false, err
+	}
+
+	return isJoin, nil
+}
+
 func (c *CommunityService) GetCommunityMembers(ctx context.Context, communityId int) ([]dto.CommunityMembers, error) {
 	res, err := c.cr.GetCommunityMembers(ctx, communityId)
 	if err != nil {

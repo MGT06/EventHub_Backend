@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/model"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -78,6 +79,52 @@ HAVING STRING_AGG(cg.category_name, ', ') ILIKE $2;`
 	}
 
 	return communities, nil
+}
+
+func (e *CommunityRepo) JoinCommunity(ctx context.Context, idUser int, idCommunity int) error {
+	query := "INSERT INTO community_members (account_id, community_id) VALUES ($1, $2)"
+	args := []any{idUser, idCommunity}
+
+	cmt, err := e.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
+func (e *CommunityRepo) LeaveCommunity(ctx context.Context, idUser int, idCommunity int) error {
+	query := "DELETE FROM community_members WHERE account_id = $1 AND community_id = $2"
+	args := []any{idUser, idCommunity}
+
+	cmt, err := e.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
+func (e *CommunityRepo) IsJoin(ctx context.Context, idUser int, idCommunity int) (bool, error) {
+	query := "SELECT EXISTS (SELECT 1 FROM community_members WHERE account_id = $1 AND community_id = $2)"
+	args := []any{idUser, idCommunity}
+
+	res := e.db.QueryRow(ctx, query, args...)
+	
+	var isJoin bool
+	if err := res.Scan(&isJoin); err != nil {
+		return false, err
+	}
+
+	return isJoin, nil
 }
 
 func (c *CommunityRepo) GetCommunityMembers(ctx context.Context, communityId int) ([]model.CommunityMembers, error) {
