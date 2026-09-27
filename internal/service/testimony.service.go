@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
+	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
 )
 
@@ -32,4 +33,25 @@ func (t *TestimonyService) GetTestimony(ctx context.Context) ([]dto.Testimony, e
 	}
 
 	return data, nil
+}
+
+func (t *TestimonyService) SetTestimony(ctx context.Context, message string, userId int) error {
+	if len(message) == 0 {
+		return errorTemplate.ErrInvalidInputs
+	}
+
+	isSend, err := t.tr.CheckUserTestimony(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	if isSend {
+		return errorTemplate.ErrDoubleSubmittedTestimony
+	}
+
+	if 	err := t.tr.SetTestimony(ctx, message, userId); err != nil {
+		return err
+	}
+
+	return nil
 }

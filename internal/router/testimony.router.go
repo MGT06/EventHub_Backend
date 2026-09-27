@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/MGT06/EventHub_Backend.git/internal/handler"
+	"github.com/MGT06/EventHub_Backend.git/internal/middleware"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
@@ -16,4 +17,5 @@ func TestimonyRouter(router *gin.Engine, db *pgxpool.Pool) {
 	th := handler.NewTestimonyHandler(ts)
 
 	testimonyRoute.GET("", th.GetTestimony)
+	testimonyRoute.POST("/send-testimony", middleware.CheckToken, th.SetTestimony)
 }
