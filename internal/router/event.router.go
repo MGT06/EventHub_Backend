@@ -10,14 +10,15 @@ import (
 )
 
 func EventRouter(router *gin.Engine, db *pgxpool.Pool) {
-	EventRoute := router.Group("/event")
+	eventRoute := router.Group("/event")
 
 	er := repo.NewEventRepo(db)
 	es := service.NewEventService(er)
 	eh := handler.NewEventHandler(es)
 
-	EventRoute.GET("", middleware.CheckToken, eh.GetAllEvents)
-	EventRoute.POST("join", middleware.CheckToken, eh.JoinEvent)
-	EventRoute.GET("upcoming", middleware.CheckToken, eh.GetUpComingEvents)
-	EventRoute.GET("myevent", middleware.CheckToken, eh.GetMyEvent)
+	eventRoute.GET("", middleware.CheckToken, eh.GetEventBySearchFilter)
+	eventRoute.GET("detail/:id", middleware.CheckToken, eh.GetEvents)
+	eventRoute.POST("join", middleware.CheckToken, eh.JoinEvent)
+	eventRoute.GET("upcoming", middleware.CheckToken, eh.GetUpComingEvents)
+	eventRoute.GET("myevent", middleware.CheckToken, eh.GetMyEvent)
 }

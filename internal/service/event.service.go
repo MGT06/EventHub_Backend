@@ -18,8 +18,8 @@ func NewEventService(er *repo.EventRepo) *EventService {
 	}
 }
 
-func (e *EventService) GetAllEvents(ctx context.Context) ([]dto.Event, error) {
-	res, err := e.er.GetAllEvents(ctx)
+func (e *EventService) GetEvents(ctx context.Context, eventId int) ([]dto.Event, error) {
+	res, err := e.er.GetEvents(ctx, eventId)
 	if err != nil {
 		return nil, err
 	}
@@ -27,16 +27,42 @@ func (e *EventService) GetAllEvents(ctx context.Context) ([]dto.Event, error) {
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
 		data = append(data, dto.Event{
-			Id: v.Id_event,
+			Id:            v.Id_event,
 			OrganizerName: v.Name,
-			Title: v.Title,
-			Description: v.Description,
-			Image_url: v.Image_event_url,
-			Format: v.Format,
-			Location: v.City,
-			Capacity: v.Capacity,
-			Speakers: v.Speakers,
-			Categories: v.Category_name,
+			Title:         v.Title,
+			Description:   v.Description,
+			Image_url:     v.Image_event_url,
+			Format:        v.Format,
+			Location:      v.City,
+			Capacity:      v.Capacity,
+			Speakers:      v.Speakers,
+			Categories:    v.Category_name,
+		})
+	}
+
+	return data, nil
+}
+
+func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string, filter string) ([]dto.Event, error) {
+	res, err := e.er.GetEventBySearchFilter(ctx, search, filter)
+
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]dto.Event, 0, len(res))
+	for _, v := range res {
+		data = append(data, dto.Event{
+			Id:            v.Id_event,
+			OrganizerName: v.Name,
+			Title:         v.Title,
+			Description:   v.Description,
+			Image_url:     v.Image_event_url,
+			Format:        v.Format,
+			Location:      v.City,
+			Capacity:      v.Capacity,
+			Speakers:      v.Speakers,
+			Categories:    v.Category_name,
 		})
 	}
 
@@ -64,16 +90,16 @@ func (e *EventService) GetUpComingEvents(ctx context.Context) ([]dto.Event, erro
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
 		data = append(data, dto.Event{
-			Id: v.Id_event,
+			Id:            v.Id_event,
 			OrganizerName: v.Name,
-			Title: v.Title,
-			Description: v.Description,
-			Image_url: v.Image_event_url,
-			Format: v.Format,
-			Location: v.City,
-			Capacity: v.Capacity,
-			Speakers: v.Speakers,
-			Categories: v.Category_name,
+			Title:         v.Title,
+			Description:   v.Description,
+			Image_url:     v.Image_event_url,
+			Format:        v.Format,
+			Location:      v.City,
+			Capacity:      v.Capacity,
+			Speakers:      v.Speakers,
+			Categories:    v.Category_name,
 		})
 	}
 
@@ -89,16 +115,16 @@ func (e *EventService) GetMyEvent(ctx context.Context, idUser int) ([]dto.Event,
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
 		data = append(data, dto.Event{
-			Id: v.Id_event,
+			Id:            v.Id_event,
 			OrganizerName: v.Name,
-			Title: v.Title,
-			Description: v.Description,
-			Image_url: v.Image_event_url,
-			Format: v.Format,
-			Location: v.City,
-			Capacity: v.Capacity,
-			Speakers: v.Speakers,
-			Categories: v.Category_name,
+			Title:         v.Title,
+			Description:   v.Description,
+			Image_url:     v.Image_event_url,
+			Format:        v.Format,
+			Location:      v.City,
+			Capacity:      v.Capacity,
+			Speakers:      v.Speakers,
+			Categories:    v.Category_name,
 		})
 	}
 

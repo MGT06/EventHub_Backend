@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
@@ -20,8 +21,43 @@ func NewEventHandler(es *service.EventService) *EventHandler {
 	}
 }
 
-func (e *EventHandler) GetAllEvents(ctx *gin.Context) {
-	res, err := e.es.GetAllEvents(ctx)
+func (e *EventHandler) GetEvents(ctx *gin.Context) {
+	eventId, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	res, err := e.es.GetEvents(ctx.Request.Context(), eventId)
+
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Data:    res,
+		Message: "Success Get Events",
+	})
+
+}
+
+func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
+
+	search := ctx.Query("search")
+	filter := ctx.Query("category")
+
+	res, err := e.es.GetEventBySearchFilter(ctx.Request.Context(), search, filter)
+
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
@@ -59,7 +95,7 @@ func (e *EventHandler) JoinEvent(ctx *gin.Context) {
 		return
 	}
 
-	err := e.es.JoinEvent(ctx, idUser.(int), body.Id_Event)
+	err := e.es.JoinEvent(ctx.Request.Context(), idUser.(int), body.Id_Event)
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
@@ -76,7 +112,7 @@ func (e *EventHandler) JoinEvent(ctx *gin.Context) {
 }
 
 func (e *EventHandler) GetUpComingEvents(ctx *gin.Context) {
-	res, err := e.es.GetUpComingEvents(ctx)
+	res, err := e.es.GetUpComingEvents(ctx.Request.Context())
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
@@ -104,7 +140,7 @@ func (e *EventHandler) GetMyEvent(ctx *gin.Context) {
 		return
 	}
 
-	res, err := e.es.GetMyEvent(ctx, idUser.(int))
+	res, err := e.es.GetMyEvent(ctx.Request.Context(), idUser.(int))
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
