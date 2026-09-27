@@ -1,0 +1,20 @@
+package router
+
+import (
+	"github.com/MGT06/EventHub_Backend.git/internal/handler"
+	"github.com/MGT06/EventHub_Backend.git/internal/middleware"
+	"github.com/MGT06/EventHub_Backend.git/internal/repo"
+	"github.com/MGT06/EventHub_Backend.git/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+func notificationRouter(router *gin.Engine, db *pgxpool.Pool) {
+	notificationRoute := router.Group("/notification")
+
+	nr := repo.NewNotificationRepo(db)
+	ns := service.NewNotificationService(nr)
+	nh := handler.NewNotificationHandler(ns)
+
+	notificationRoute.GET("", middleware.CheckToken, nh.GetMyNotification)
+}
