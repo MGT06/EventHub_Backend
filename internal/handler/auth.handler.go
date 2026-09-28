@@ -91,3 +91,44 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 		Message: "Login Success",
 	})
 }
+
+func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	var body dto.ChangePassword
+	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	if err := a.as.ChangePassword(ctx, idUser.(int), body.NewPassword); err != nil {
+		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
+			ctx.JSON(http.StatusBadRequest, dto.Response{
+				Success: false,
+				Message: "Please fill in all required fields",
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Change Password Success",
+	})
+}

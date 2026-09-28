@@ -45,3 +45,19 @@ func (a *AuthRepo) FindAccount(ctx context.Context, email string) (model.Account
 
 	return data, nil
 }
+
+func (a *AuthRepo) ChangePassword(ctx context.Context, userId int, newPassword string) error {
+	query := "UPDATE accounts SET password = $1 WHERE id = $2"
+	args := []any{newPassword, userId}
+
+	cmt, err := a.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}

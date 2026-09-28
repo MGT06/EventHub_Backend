@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/MGT06/EventHub_Backend.git/internal/handler"
+	"github.com/MGT06/EventHub_Backend.git/internal/middleware"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
@@ -17,4 +18,5 @@ func authRouter(router *gin.Engine, db *pgxpool.Pool){
 
 	authRoute.POST("/register", ah.Register)
 	authRoute.POST("/login", ah.Login)
+	authRoute.POST("/change-password", middleware.CheckToken, ah.ChangePassword)
 }

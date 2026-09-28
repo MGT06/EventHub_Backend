@@ -47,7 +47,7 @@ func (a *AuthService) Register(ctx context.Context, body dto.Register) error {
 
 func (a *AuthService) Login(ctx context.Context, body dto.Login) (string, error) {
 	if len(body.Email) == 0 || len(body.Password) == 0 {
-		return "",  errorTemplate.ErrInvalidInputs
+		return "", errorTemplate.ErrInvalidInputs
 	}
 
 	acc, err := a.ar.FindAccount(ctx, body.Email)
@@ -61,4 +61,18 @@ func (a *AuthService) Login(ctx context.Context, body dto.Login) (string, error)
 
 	claims := pkg.NewJWTClaims(acc.Id, acc.Role)
 	return claims.GenToken()
+}
+
+func (a *AuthService) ChangePassword(ctx context.Context, userId int, newPassword string) error {
+	if len(newPassword) == 0 {
+		return errorTemplate.ErrInvalidInputs
+	}
+
+	hash := pkg.NewHashConfig().GenHash(newPassword)
+
+	if err := a.ar.ChangePassword(ctx, userId, hash); err != nil {
+		return err
+	}
+
+	return nil
 }
