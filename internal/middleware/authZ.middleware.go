@@ -76,3 +76,22 @@ func OrganizerAccess(c *gin.Context) {
 		return
 	}
 }
+
+func AdminAccess(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, dto.Response{
+			Success: false,
+			Message: "login first",
+		})
+		return
+	}
+
+	if role != "admin" {
+		c.AbortWithStatusJSON(http.StatusForbidden, dto.Response{
+			Success: false,
+			Message: "no privilege",
+		})
+		return
+	}
+}
