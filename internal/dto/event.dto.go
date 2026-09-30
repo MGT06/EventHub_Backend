@@ -14,5 +14,5 @@ type Event struct {
 	Location      string    `json:"location"`
 	Capacity      string    `json:"capacity"`
 	Speakers      string    `json:"speakers"`
-	Categories    string    `json:"categories"`
+	Categories    []string  `json:"categories"`
 }

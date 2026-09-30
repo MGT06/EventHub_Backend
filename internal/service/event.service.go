@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
@@ -25,6 +26,8 @@ func (e *EventService) GetEvents(ctx context.Context, eventId int) ([]dto.Event,
 
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
+		category := strings.Split(v.Category_name, ", ")
+
 		data = append(data, dto.Event{
 			Id:            v.Id_event,
 			OrganizerName: v.Name,
@@ -35,7 +38,7 @@ func (e *EventService) GetEvents(ctx context.Context, eventId int) ([]dto.Event,
 			Location:      v.City,
 			Capacity:      v.Capacity,
 			Speakers:      v.Speakers,
-			Categories:    v.Category_name,
+			Categories:    category,
 		})
 	}
 
@@ -51,6 +54,8 @@ func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string
 
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
+		category := strings.Split(v.Category_name, ", ")
+
 		data = append(data, dto.Event{
 			Id:            v.Id_event,
 			OrganizerName: v.Name,
@@ -61,7 +66,7 @@ func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string
 			Location:      v.City,
 			Capacity:      v.Capacity,
 			Speakers:      v.Speakers,
-			Categories:    v.Category_name,
+			Categories:    category,
 		})
 	}
 
@@ -96,6 +101,8 @@ func (e *EventService) GetUpComingEvents(ctx context.Context) ([]dto.Event, erro
 
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
+		category := strings.Split(v.Category_name, ", ")
+
 		data = append(data, dto.Event{
 			Id:            v.Id_event,
 			OrganizerName: v.Name,
@@ -106,7 +113,7 @@ func (e *EventService) GetUpComingEvents(ctx context.Context) ([]dto.Event, erro
 			Location:      v.City,
 			Capacity:      v.Capacity,
 			Speakers:      v.Speakers,
-			Categories:    v.Category_name,
+			Categories:    category,
 		})
 	}
 
@@ -121,6 +128,8 @@ func (e *EventService) GetMyEvent(ctx context.Context, idUser int) ([]dto.Event,
 
 	data := make([]dto.Event, 0, len(res))
 	for _, v := range res {
+		category := strings.Split(v.Category_name, ", ")
+
 		data = append(data, dto.Event{
 			Id:            v.Id_event,
 			OrganizerName: v.Name,
@@ -131,7 +140,7 @@ func (e *EventService) GetMyEvent(ctx context.Context, idUser int) ([]dto.Event,
 			Location:      v.City,
 			Capacity:      v.Capacity,
 			Speakers:      v.Speakers,
-			Categories:    v.Category_name,
+			Categories:    category,
 		})
 	}
 
