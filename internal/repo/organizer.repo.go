@@ -18,20 +18,13 @@ func NewOrganizerRepo(db *pgxpool.Pool) *OrganizerRepo {
 }
 
 func (o *OrganizerRepo) GetDataDashboard(ctx context.Context, userId int) (model.DashboardOrganizer, error) {
-	query := `SELECT
-    (SELECT COUNT(title)
-     FROM events
-     WHERE organizer_id = $1) AS "total_event_created",
+	query := `SELECT COUNT(e.id) AS "total_event_created",
+       COUNT(DISTINCT je.account_id) AS "total_attendees_joined",
+       COALESCE(COUNT(DISTINCT je.account_id) * 100 / NULLIF(COUNT(e.id), 0), 0) AS "avg_fill_rate" 
+	   FROM events e
+	   LEFT JOIN join_event je ON e.id = je.event_id
+	   WHERE e.organizer_id = 3;`
 
-    (SELECT COUNT(DISTINCT je.account_id)
-     FROM join_event je
-     JOIN events e ON je.event_id = e.id
-     WHERE e.organizer_id = $1) AS "total_attendees_joined",
-
-    (SELECT COALESCE(COUNT(DISTINCT je.account_id) * 100 / NULLIF(COUNT(e.id), 0), 0)
-     FROM join_event je
-     JOIN events e ON je.event_id = e.id
-     WHERE e.organizer_id = $1) AS "avg_fill_rate";`
 
 	args := []any{userId}
 
