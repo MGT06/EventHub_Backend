@@ -17,4 +17,5 @@ func UserRouter(router *gin.Engine, db *pgxpool.Pool) {
 	uh := handler.NewUserHandler(us)
 
 	userRoute.GET("", middleware.CheckToken, uh.GetProfileUser)
+	userRoute.PATCH("edit", middleware.CheckToken, uh.EditProfileUser)
 }

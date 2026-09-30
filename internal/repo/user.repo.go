@@ -22,7 +22,7 @@ func (u *UserRepo) GetProfileUser(ctx context.Context, userId int) (model.Accoun
 	query := "SELECT name, bio, user_location, position, avatar_url FROM accounts where id = $1"
 	args := []any{userId}
 
-	res := u.db.QueryRow(ctx,query, args...)
+	res := u.db.QueryRow(ctx, query, args...)
 
 	var profile model.Account
 	if err := res.Scan(&profile.Name, &profile.Bio, &profile.User_location, &profile.Position, &profile.Avatar_url); err != nil {
@@ -32,4 +32,27 @@ func (u *UserRepo) GetProfileUser(ctx context.Context, userId int) (model.Accoun
 	fmt.Println(profile.Name)
 
 	return profile, nil
+}
+
+func (u *UserRepo) EditProfileUser(ctx context.Context, body model.Account, userId int) error {
+	query := `UPDATE accounts 
+    SET 
+		name = COALESCE($1, name),
+        bio = COALESCE($2, bio), 
+        user_location = COALESCE($3, user_location), 
+        position = COALESCE($4, position), 
+        avatar_url = COALESCE($5, avatar_url) 
+    WHERE id = $6`
+	args := []any{body.Name, body.Bio, body.User_location, body.Position, body.Avatar_url, userId}
+
+	cmt, err := u.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
 }
