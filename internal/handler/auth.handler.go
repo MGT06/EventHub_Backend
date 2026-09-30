@@ -54,7 +54,7 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
-			Message: "A system error has occurred",
+			Message: "Invalid email format",
 		})
 		return
 	}
