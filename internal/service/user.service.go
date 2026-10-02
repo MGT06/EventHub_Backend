@@ -2,23 +2,37 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	"github.com/MGT06/EventHub_Backend.git/internal/model"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
+	"github.com/MGT06/EventHub_Backend.git/internal/utils"
+	"github.com/redis/go-redis/v9"
 )
 
 type UserService struct {
 	ur *repo.UserRepo
+	rc *redis.Client
 }
 
-func NewUserService(ur *repo.UserRepo) *UserService {
+func NewUserService(ur *repo.UserRepo, rc *redis.Client) *UserService {
 	return &UserService{
 		ur: ur,
+		rc: rc,
 	}
 }
 
 func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserProfile, error) {
+	key := fmt.Sprintf("eventhub:profile:%d", userId)
+
+	if result, err := utils.GetFromRedis[dto.UserProfile](ctx, u.rc, key); err != nil {
+		log.Println(err)
+	}else {
+		return result, nil
+	}
+
 	res, err := u.ur.GetProfileUser(ctx, userId)
 
 	if err != nil {
@@ -31,6 +45,10 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 		User_location: res.User_location,
 		Position:      res.Position,
 		Avatar_url:    res.Avatar_url,
+	}
+
+	if err := utils.SetToRedis(ctx, u.rc, key, data); err != nil {
+		log.Println(err)
 	}
 
 	return data, err
