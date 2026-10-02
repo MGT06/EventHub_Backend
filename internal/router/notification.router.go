@@ -7,14 +7,15 @@ import (
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-func notificationRouter(router *gin.Engine, db *pgxpool.Pool) {
+func notificationRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	notificationRoute := router.Group("/notification")
 
 	nr := repo.NewNotificationRepo(db)
 	ns := service.NewNotificationService(nr)
 	nh := handler.NewNotificationHandler(ns)
 
-	notificationRoute.GET("", middleware.CheckToken, nh.GetMyNotification)
+	notificationRoute.GET("", middleware.CheckToken(rc), nh.GetMyNotification)
 }

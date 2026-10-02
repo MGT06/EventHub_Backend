@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"time"
 
 	_ "github.com/MGT06/EventHub_Backend.git/docs"
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
@@ -144,5 +145,58 @@ func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, dto.Response{
 		Success: true,
 		Message: "Change Password Success",
+	})
+}
+
+func (a *AuthHandler) Logout(ctx *gin.Context) {
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	jwtID, exist := ctx.Get("jti")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	exp, exist := ctx.Get("exp")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	expTime, ok := exp.(time.Time)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ttl := time.Until(expTime)
+
+	if err := a.as.Logout(ctx, idUser.(int), jwtID.(string), ttl); err != nil {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+	
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "logout success",
 	})
 }

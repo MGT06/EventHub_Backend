@@ -3,22 +3,28 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/model"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
+	"github.com/MGT06/EventHub_Backend.git/internal/utils"
 	"github.com/MGT06/EventHub_Backend.git/pkg"
 	"github.com/jackc/pgx/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
 	ar *repo.AuthRepo
+	rc *redis.Client
 }
 
-func NewAuthService(ar *repo.AuthRepo) *AuthService {
+func NewAuthService(ar *repo.AuthRepo, rc *redis.Client) *AuthService {
 	return &AuthService{
 		ar: ar,
+		rc: rc,
 	}
 }
 
@@ -71,6 +77,17 @@ func (a *AuthService) ChangePassword(ctx context.Context, userId int, newPasswor
 	hash := pkg.NewHashConfig().GenHash(newPassword)
 
 	if err := a.ar.ChangePassword(ctx, userId, hash); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
+func (a *AuthService) Logout(ctx context.Context, userId int, JTI string, Expired time.Duration) error {
+	key := fmt.Sprintf("eventhub:tokenBlacklist:%s", JTI)
+
+	if err := utils.SetToRedis(ctx, a.rc, key, userId, Expired); err != nil {
 		return err
 	}
 

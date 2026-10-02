@@ -2,10 +2,12 @@ package pkg
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type JWTClaims struct {
@@ -14,13 +16,18 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-func NewJWTClaims(id int, role string) *JWTClaims {
+func NewJWTClaims(userID int, role string) *JWTClaims {
+	ID, err := uuid.NewRandom()
+	if err != nil {
+		log.Println(err)
+	}
 	return &JWTClaims{
-		Id:   id,
+		Id:   userID,
 		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    os.Getenv("JWT_ISSUER"),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 10)),
+			ID: ID.String(),
 		},
 	}
 }

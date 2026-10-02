@@ -8,8 +8,8 @@ type Register struct {
 }
 
 type Login struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" example:"alfan@gmail.com"`
+	Password string `json:"password" example:"alfan123"`
 }
 
 type ChangePassword struct {

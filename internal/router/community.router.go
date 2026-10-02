@@ -7,17 +7,18 @@ import (
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-func CommunityRouter(ctx *gin.Engine, db *pgxpool.Pool) {
+func CommunityRouter(ctx *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	communityRoute := ctx.Group("/community")
 
 	cr := repo.NewCommunityRepo(db)
 	cs := service.NewCommunityService(cr)
 	ch := handler.NewCommunityHandler(cs)
 
-	communityRoute.GET("", middleware.CheckToken, ch.GetCommunityBySearchFilter)
-	communityRoute.GET("detail/:id", middleware.CheckToken, ch.GetCommunity)
-	communityRoute.POST("join/:id", middleware.CheckToken, ch.ToggleJoinCommunity)
-	communityRoute.GET("members/:id", middleware.CheckToken, ch.GetCommunityMembers)
+	communityRoute.GET("", middleware.CheckToken(rc), ch.GetCommunityBySearchFilter)
+	communityRoute.GET("detail/:id", middleware.CheckToken(rc), ch.GetCommunity)
+	communityRoute.POST("join/:id", middleware.CheckToken(rc), ch.ToggleJoinCommunity)
+	communityRoute.GET("members/:id", middleware.CheckToken(rc), ch.GetCommunityMembers)
 }

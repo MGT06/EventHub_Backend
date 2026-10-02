@@ -10,14 +10,14 @@ import (
 )
 
 func MainRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
-	authRouter(router, db)
-	EventRouter(router, db)
-	CommunityRouter(router, db)
+	authRouter(router, db, rc)
+	EventRouter(router, db, rc)
+	CommunityRouter(router, db, rc)
 	UserRouter(router, db, rc)
-	TestimonyRouter(router, db)
-	notificationRouter(router, db)
-	OrganizerRouter(router, db)
-	AdminRouter(router, db)
+	TestimonyRouter(router, db, rc)
+	notificationRouter(router, db, rc)
+	OrganizerRouter(router, db, rc)
+	AdminRouter(router, db, rc)
 
 	router.GET("api/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

@@ -7,14 +7,15 @@ import (
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-func AdminRouter(router *gin.Engine, db *pgxpool.Pool) {
+func AdminRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	adminRoute := router.Group("/admin")
 
 	ar := repo.NewAdminRepo(db)
 	as := service.NewAdminService(ar)
 	ah := handler.NewAdminHandler(as)
 
-	adminRoute.GET("",middleware.CheckToken, middleware.AdminAccess, ah.GetDataDashboard)
+	adminRoute.GET("",middleware.CheckToken(rc), middleware.AdminAccess, ah.GetDataDashboard)
 }

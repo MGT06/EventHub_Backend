@@ -17,6 +17,6 @@ func UserRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	us := service.NewUserService(ur, rc)
 	uh := handler.NewUserHandler(us)
 
-	userRoute.GET("", middleware.CheckToken, uh.GetProfileUser)
-	userRoute.PATCH("edit", middleware.CheckToken, uh.EditProfileUser)
+	userRoute.GET("", middleware.CheckToken(rc), uh.GetProfileUser)
+	userRoute.PATCH("edit", middleware.CheckToken(rc), uh.EditProfileUser)
 }

@@ -7,16 +7,18 @@ import (
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-func authRouter(router *gin.Engine, db *pgxpool.Pool){
+func authRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client){
 	authRoute := router.Group("/auth")
 
 	ar := repo.NewAuthRepo(db)
-	as := service.NewAuthService(ar)
+	as := service.NewAuthService(ar, rc)
 	ah := handler.NewAuthHandler(as)
 
-	authRoute.POST("/register", ah.Register)
-	authRoute.POST("/login", ah.Login)
-	authRoute.POST("/change-password", middleware.CheckToken, ah.ChangePassword)
+	authRoute.POST("register", ah.Register)
+	authRoute.POST("login", ah.Login)
+	authRoute.POST("change-password", middleware.CheckToken(rc), ah.ChangePassword)
+	authRoute.POST("logout", middleware.CheckToken(rc), ah.Logout)
 }

@@ -7,9 +7,10 @@ import (
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
-func EventRouter(router *gin.Engine, db *pgxpool.Pool) {
+func EventRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	eventRoute := router.Group("/event")
 
 	er := repo.NewEventRepo(db)
@@ -18,7 +19,7 @@ func EventRouter(router *gin.Engine, db *pgxpool.Pool) {
 
 	eventRoute.GET("", eh.GetEventBySearchFilter)
 	eventRoute.GET("detail/:id", eh.GetEvents)
-	eventRoute.POST("join/:id", middleware.CheckToken, eh.ToggleJoinEvent)
-	eventRoute.GET("upcoming", middleware.CheckToken, eh.GetUpComingEvents)
-	eventRoute.GET("myevent", middleware.CheckToken, eh.GetMyEvent)
+	eventRoute.POST("join/:id", middleware.CheckToken(rc), eh.ToggleJoinEvent)
+	eventRoute.GET("upcoming", middleware.CheckToken(rc), eh.GetUpComingEvents)
+	eventRoute.GET("myevent", middleware.CheckToken(rc), eh.GetMyEvent)
 }
