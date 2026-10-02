@@ -17,8 +17,8 @@ func CommunityRouter(ctx *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	cs := service.NewCommunityService(cr)
 	ch := handler.NewCommunityHandler(cs)
 
-	communityRoute.GET("", middleware.CheckToken(rc), ch.GetCommunityBySearchFilter)
-	communityRoute.GET("detail/:id", middleware.CheckToken(rc), ch.GetCommunity)
+	communityRoute.GET("", ch.GetCommunityBySearchFilter)
+	communityRoute.GET("detail/:id", ch.GetCommunity)
 	communityRoute.POST("join/:id", middleware.CheckToken(rc), ch.ToggleJoinCommunity)
-	communityRoute.GET("members/:id", middleware.CheckToken(rc), ch.GetCommunityMembers)
+	communityRoute.GET("members/:id", ch.GetCommunityMembers)
 }

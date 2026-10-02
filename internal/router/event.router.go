@@ -20,6 +20,6 @@ func EventRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	eventRoute.GET("", eh.GetEventBySearchFilter)
 	eventRoute.GET("detail/:id", eh.GetEvents)
 	eventRoute.POST("join/:id", middleware.CheckToken(rc), eh.ToggleJoinEvent)
-	eventRoute.GET("upcoming", middleware.CheckToken(rc), eh.GetUpComingEvents)
+	eventRoute.GET("upcoming", eh.GetUpComingEvents)
 	eventRoute.GET("myevent", middleware.CheckToken(rc), eh.GetMyEvent)
 }
