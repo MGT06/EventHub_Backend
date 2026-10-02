@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"path"
+	"time"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
@@ -49,6 +52,21 @@ func (u *UserHandler) GetProfileUser(ctx *gin.Context) {
 
 }
 
+// Edit User
+//
+// @Summary			Update user info
+// @Tags			user
+// @Accept			mpfd
+// @Produce			json
+// @Router			/user/edit	[patch]
+// @Security 		BearerToken
+// @Param			name			formData	string	true	"update name user"
+// @Param			bio				formData	string	false	"update bio user"
+// @Param			user_location	formData	string	false	"update location user"
+// @Param			position		formData	string	false	"update position user"
+// @Param			avatar_url		formData	file	false	"update avatar user"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.Response
 func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	id, exists := ctx.Get("idUser")
 	if !exists {
@@ -59,8 +77,8 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 		return
 	}
 
-	var body dto.UserProfile
-	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
+	var body dto.SetUserProfile
+	if err := ctx.ShouldBindWith(&body, binding.FormMultipart); err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
@@ -69,7 +87,19 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 		return
 	}
 
-	if err := u.us.EditProfileUser(ctx, body, id.(int)); err != nil {
+	filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Name, path.Ext(body.Avatar.Filename))
+	filepath := path.Join("public", "img", filename)
+
+	if err := ctx.SaveUploadedFile(body.Avatar, filepath); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	if err := u.us.EditProfileUser(ctx, body, id.(int), filepath); err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,

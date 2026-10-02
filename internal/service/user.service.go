@@ -54,13 +54,13 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 	return data, err
 }
 
-func (u *UserService) EditProfileUser(ctx context.Context, body dto.UserProfile, userId int) error {
+func (u *UserService) EditProfileUser(ctx context.Context, body dto.SetUserProfile, userId int, AvaPath string) error {
 	if err := u.ur.EditProfileUser(ctx, model.Account{
 		Name:          body.Name,
 		Bio:           body.Bio,
 		User_location: body.User_location,
 		Position:      body.Position,
-		Avatar_url:    body.Avatar_url,
+		Avatar_url:    &AvaPath,
 	}, userId); err != nil {
 		return err
 	}
