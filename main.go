@@ -10,6 +10,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//	@title			Event Hub API
+//	@version		1.0
+//	@description	This is a sample server celler server.
+
+//	@host		localhost:9000
+//	@BasePath	/
+
+//	@securityDefinitions.apikey		BearerToken
+//	@in								header
+//	@name							Authorization
+//	@description					Bearer token used as identitiy for access resource
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println(err)
@@ -24,9 +36,19 @@ func main() {
 		return
 	}
 
+	defer pool.Close()
+
+
+	rc := config.NewRedisClient(os.Getenv("RDBUSER"), os.Getenv("RDBPASS"), os.Getenv("RDBHOST"), os.Getenv("RDBPORT"))
+	rdb := rc.ConnectRedis()
+
+	// if err := rdb.Ping(ctx).Err(); err != nil {
+
+	// }
+
 	r := gin.Default()
 
-	router.MainRouter(r, pool)
+	router.MainRouter(r, pool, rdb)
 
 	r.Run("localhost:9000")
 }

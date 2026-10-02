@@ -20,6 +20,16 @@ func NewEventHandler(es *service.EventService) *EventHandler {
 	}
 }
 
+// Get Event
+//
+// @Summary			Get Event
+// @Description		Get event detail using ID event
+// @Tags			event
+// @Produce			json
+// @Router			/event/detail/{id}	[get]
+// @Param			id		path		int		true	"Event ID"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.Response
 func (e *EventHandler) GetEvents(ctx *gin.Context) {
 	eventId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -74,6 +84,17 @@ func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
 
 }
 
+// Toggle Join Event
+//
+// @Summary			Join and Leave Event
+// @Description		Toggle to Join and Leave Event
+// @Tags			event
+// @Produce			json
+// @Router			/event/join/{id}		[post]
+// @Security 		BearerToken
+// @Param			id		path	int	true	"Event ID"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.Response
 func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
 	idEvent, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	_ "github.com/MGT06/EventHub_Backend.git/docs"
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
@@ -48,6 +49,19 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 	})
 }
 
+// Login
+//
+// @Summary			Login
+// @Description		Login using email and password
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/auth/login	[post]
+// @Param			account	body	dto.Login	true	"Login"
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.Response
+// @Failure			401		{object}	dto.Response
+// @Failure			500		{object}	dto.Response
 func (a *AuthHandler) Login(ctx *gin.Context) {
 	var account dto.Login
 	if err := ctx.ShouldBindWith(&account, binding.JSON); err != nil {
