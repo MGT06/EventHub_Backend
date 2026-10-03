@@ -152,3 +152,35 @@ func (c *CommunityRepo) GetCommunityMembers(ctx context.Context, communityId int
 
 	return communityMembers, nil
 }
+
+func (c *CommunityRepo) GetPopularCommunity(ctx context.Context) ( []model.CommunityDetail, error) {
+	query := `SELECT c.id, c.community_name, c.description, c.image_community_url, STRING_AGG(cg.category_name, ', ') AS "category"
+	FROM communities c
+	JOIN community_categories cc ON cc.community_id = c.id
+	JOIN categories cg ON cg.id = cc.category_id
+	JOIN community_members cm ON cm.community_id = c.id
+	GROUP BY  c.id, c.community_name, c.description, c.image_community_url
+	ORDER BY COUNT(cm.account_id) DESC
+	LIMIT 4;`
+
+	res, err := c.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+		var communities []model.CommunityDetail
+
+	for res.Next() {
+		var community model.CommunityDetail
+		if err := res.Scan(&community.Id_community, &community.Community_name, &community.Description, &community.Image_community_url, &community.Category_name); err != nil {
+			return nil, err
+		}
+		communities = append(communities, community)
+	}
+
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	return communities, nil
+}

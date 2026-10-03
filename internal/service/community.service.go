@@ -94,3 +94,23 @@ func (c *CommunityService) GetCommunityMembers(ctx context.Context, communityId 
 
 	return data, nil
 }
+
+func (c *CommunityService) GetPopularCommunity(ctx context.Context) ([]dto.Community, error) {
+	res, err := c.cr.GetPopularCommunity(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]dto.Community, 0, len(res))
+	for _, v := range res {
+		data = append(data, dto.Community{
+			Id:             v.Id_community,
+			Community_name: v.Community_name,
+			Description:    v.Description,
+			Image_url:      v.Image_community_url,
+			Category:       v.Category_name,
+		})
+	}
+
+	return data, nil
+}
