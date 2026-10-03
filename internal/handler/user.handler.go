@@ -88,7 +88,7 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	}
 
 	filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Name, path.Ext(body.Avatar.Filename))
-	filepath := path.Join("public", "img", filename)
+	filepath := path.Join("public", "img", "persons", filename)
 
 	if err := ctx.SaveUploadedFile(body.Avatar, filepath); err != nil {
 		log.Println(err)
@@ -113,4 +113,30 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 		Message: "Success Edit Profile",
 	})
 
+}
+
+func (u *UserHandler) GetUserHeaderInformation(ctx *gin.Context) {
+	id, exists := ctx.Get("idUser")
+	if !exists {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	res, err := u.us.GetUserHeaderInformation(ctx.Request.Context(), id.(int))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Data: res,
+		Message: "Success Get Information Header User",
+	})
 }

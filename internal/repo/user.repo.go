@@ -19,13 +19,13 @@ func NewUserRepo(db *pgxpool.Pool) *UserRepo {
 }
 
 func (u *UserRepo) GetProfileUser(ctx context.Context, userId int) (model.Account, error) {
-	query := "SELECT name, bio, user_location, position, avatar_url FROM accounts where id = $1"
+	query := "SELECT name, email, bio, user_location, position, avatar_url FROM accounts where id = $1"
 	args := []any{userId}
 
 	res := u.db.QueryRow(ctx, query, args...)
 
 	var profile model.Account
-	if err := res.Scan(&profile.Name, &profile.Bio, &profile.User_location, &profile.Position, &profile.Avatar_url); err != nil {
+	if err := res.Scan(&profile.Name, &profile.Email, &profile.Bio, &profile.User_location, &profile.Position, &profile.Avatar_url); err != nil {
 		return model.Account{}, nil
 	}
 
@@ -55,4 +55,18 @@ func (u *UserRepo) EditProfileUser(ctx context.Context, body model.Account, user
 	}
 
 	return nil
+}
+
+func (u *UserRepo) GetUserHeaderInformation(ctx context.Context, userId int) (model.Account, error) {
+	query := "SELECT name, email, avatar_url FROM accounts WHERE id = $1"
+	args := []any{userId}
+
+	res := u.db.QueryRow(ctx, query, args...)
+	
+	var userInformation model.Account
+	if err := res.Scan(&userInformation.Name, &userInformation.Email, &userInformation.Avatar_url); err != nil {
+		return model.Account{}, err
+	}
+
+	return userInformation, nil
 }

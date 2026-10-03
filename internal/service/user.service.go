@@ -41,6 +41,7 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 
 	data := dto.UserProfile{
 		Name:          res.Name,
+		Email:	 	   res.Email,
 		Bio:           res.Bio,
 		User_location: res.User_location,
 		Position:      res.Position,
@@ -66,4 +67,19 @@ func (u *UserService) EditProfileUser(ctx context.Context, body dto.SetUserProfi
 	}
 
 	return nil
+}
+
+func (u *UserService) GetUserHeaderInformation(ctx context.Context, userId int) (dto.UserHeaderInfo, error) {
+	res, err := u.ur.GetUserHeaderInformation(ctx, userId)
+	if err != nil {
+		return dto.UserHeaderInfo{}, nil
+	}
+
+	data := dto.UserHeaderInfo{
+		Name: res.Name,
+		Email: res.Email,
+		Avatar_url: res.Avatar_url,
+	}
+
+	return data, nil
 }
