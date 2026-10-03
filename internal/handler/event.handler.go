@@ -1,13 +1,18 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
+	"time"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type EventHandler struct {
@@ -182,4 +187,82 @@ func (e *EventHandler) GetMyEvent(ctx *gin.Context) {
 		Message: "Success Get Events",
 	})
 
+}
+
+// Create Event
+//
+// @Summary			Create New Event
+// @Tags			event
+// @Accept			mpfd
+// @Produce			json
+// @Router			/event/create	[post]
+// @Security 		BearerToken
+// @Param			community_id			formData	int			false	"add community to event"
+// @Param			location_event_id		formData	int			false	"add location event"
+// @Param			title					formData	string		false	"add title event"
+// @Param			description				formData	string		false	"add desc event"
+// @Param			image					formData	file		false	"add image event"
+// @Param			start_at				formData	string		false	"add time start event" format(date-time)
+// @Param			end_at					formData	string		false	"add time end event" format(date-time)
+// @Param			format					formData	string		false	"add format event"
+// @Param			capacity				formData	string		false	"add capacity event"
+// @Param			speakers				formData	string		false	"add speakers event"
+// @Param			categories				formData	[]int		false	"add categories event" collectionFormat(multi)
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.Response
+func (e *EventHandler) AddEvent(ctx *gin.Context) {
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		log.Println(idUser)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	var body dto.AddEvent
+	if err := ctx.ShouldBindWith(&body, binding.FormMultipart); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Title, path.Ext(body.Image.Filename))
+	filepath := path.Join("public", "img", "events", filename)
+
+	if err := ctx.SaveUploadedFile(&body.Image, filepath); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	var speakers []dto.Speaker
+	if err := json.Unmarshal([]byte(body.Speakers), &speakers); err != nil {
+		ctx.JSON(http.StatusBadRequest, dto.Response{
+			Success: false,
+			Message: "invalid speakers format",
+		})
+		return
+	}
+
+	if err := e.es.AddEvent(ctx.Request.Context(), body, idUser.(int), filepath, speakers); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Success Create Event",
+	})
 }

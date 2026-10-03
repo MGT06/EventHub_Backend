@@ -13,8 +13,8 @@ import (
 func EventRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	eventRoute := router.Group("/event")
 
-	er := repo.NewEventRepo(db)
-	es := service.NewEventService(er)
+	er := repo.NewEventRepo()
+	es := service.NewEventService(er, db)
 	eh := handler.NewEventHandler(es)
 
 	eventRoute.GET("", eh.GetEventBySearchFilter)
@@ -22,4 +22,5 @@ func EventRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	eventRoute.POST("join/:id", middleware.CheckToken(rc), eh.ToggleJoinEvent)
 	eventRoute.GET("upcoming", eh.GetUpComingEvents)
 	eventRoute.GET("myevent", middleware.CheckToken(rc), eh.GetMyEvent)
+	eventRoute.POST("create", middleware.CheckToken(rc), middleware.OrganizerAccess, eh.AddEvent)
 }

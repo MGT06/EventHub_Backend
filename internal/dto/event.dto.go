@@ -1,6 +1,9 @@
 package dto
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type Event struct {
 	Id            int       `json:"id"`
@@ -12,7 +15,28 @@ type Event struct {
 	End_at        time.Time `json:"end_at"`
 	Format        string    `json:"format"`
 	Location      string    `json:"location"`
-	Capacity      string    `json:"capacity"`
+	Capacity      int    `json:"capacity"`
 	Speakers      string    `json:"speakers"`
 	Categories    []string  `json:"categories"`
+}
+
+type AddEvent struct {
+	OrganizerId int                  `form:"organizer_id"`
+	CommunityId *int                 `form:"community_id"`
+	Title       string               `form:"title"`
+	Description string               `form:"description"`
+	Image       multipart.FileHeader `form:"image"`
+	Start_at    time.Time            `form:"start_at"`
+	End_at      time.Time            `form:"end_at"`
+	Format      string               `form:"format"`
+	LocationId  int                  `form:"location_event_id"`
+	Capacity    int                  `form:"capacity"`
+	Speakers    string               `form:"speakers"`
+	Categories  []int                `form:"categories"`
+}
+
+type Speaker struct {
+	Name   string `json:"name"`
+	Title  string `json:"title"`
+	Avatar string `json:"avatar_url"`
 }
