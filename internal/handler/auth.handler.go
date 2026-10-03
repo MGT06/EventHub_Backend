@@ -127,11 +127,18 @@ func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
 		return
 	}
 
-	if err := a.as.ChangePassword(ctx, idUser.(int), body.NewPassword); err != nil {
+	if err := a.as.ChangePassword(ctx, idUser.(int), body); err != nil {
 		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
 			ctx.JSON(http.StatusBadRequest, dto.Response{
 				Success: false,
 				Message: "Please fill in all required fields",
+			})
+			return
+		}
+		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
+			ctx.JSON(http.StatusBadRequest, dto.Response{
+				Success: false,
+				Message: errorTemplate.ErrEmailPasswordIncorrect.Error(),
 			})
 			return
 		}
@@ -194,7 +201,7 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 		})
 		return
 	}
-	
+
 	ctx.JSON(http.StatusOK, dto.Response{
 		Success: true,
 		Message: "logout success",

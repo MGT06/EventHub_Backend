@@ -13,5 +13,7 @@ type Login struct {
 }
 
 type ChangePassword struct {
-	NewPassword string `json:"newPassword"`
+	Email string `json:"email"`
+	CurrentPassword string `json:"currentPassword"`
+	NewPassword     string `json:"newPassword"`
 }

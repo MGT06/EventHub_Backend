@@ -248,3 +248,6 @@ GROUP BY e.id, a.name, e.title, e.description, e.image_event_url, e.start_at, e.
 	return events, nil
 }
 
+func (e *EventRepo) AddEvent(ctx context.Context) {
+	 
+}
