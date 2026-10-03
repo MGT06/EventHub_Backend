@@ -161,6 +161,53 @@ func (e *EventRepo) IsJoin(ctx context.Context, db DBTX, idUser int, idEvent int
 	return isJoin, nil
 }
 
+func (e *EventRepo) SavedEvent(ctx context.Context, db DBTX, idUser int, idEvent int) error {
+	query := "INSERT INTO saved_events (account_id, event_id) VALUES ($1, $2)"
+	args := []any{idUser, idEvent}
+
+	cmt, err := db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
+func (e *EventRepo) UnSavedEvent(ctx context.Context, db DBTX, idUser int, idEvent int) error {
+	query := "DELETE FROM saved_events WHERE account_id = $1 AND event_id = $2"
+	args := []any{idUser, idEvent}
+
+	cmt, err := db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
+func (e *EventRepo) IsSaved(ctx context.Context, db DBTX, idUser int, idEvent int) (bool, error) {
+	query := "SELECT EXISTS (SELECT 1 FROM saved_events WHERE account_id = $1 AND event_id = $2)"
+	args := []any{idUser, idEvent}
+
+	res := db.QueryRow(ctx, query, args...)
+
+	var isJoin bool
+	if err := res.Scan(&isJoin); err != nil {
+		return false, err
+	}
+
+	return isJoin, nil
+}
+
+
 func (e *EventRepo) GetUpComingEvents(ctx context.Context, db DBTX) ([]model.EventDetail, error) {
 	query := `SELECT e.id,
 	   a.name,

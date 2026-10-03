@@ -99,6 +99,26 @@ func (e *EventService) ToggleJoinEvent(ctx context.Context, idUser int, idEvent 
 	return isJoin, nil
 }
 
+func (e *EventService) ToggleSavedEvent(ctx context.Context, idUser int, idEvent int) (bool, error) {
+	isSaved, err := e.er.IsSaved(ctx, e.db, idUser, idEvent)
+	if err != nil {
+		return false, err
+	}
+
+	if isSaved {
+		if err := e.er.UnSavedEvent(ctx, e.db, idUser, idEvent); err != nil {
+			return false, err
+		}
+		return isSaved, nil
+	}
+
+	if err := e.er.SavedEvent(ctx, e.db, idUser, idEvent); err != nil {
+		return false, err
+	}
+
+	return isSaved, nil
+}
+
 func (e *EventService) GetUpComingEvents(ctx context.Context) ([]dto.Event, error) {
 	res, err := e.er.GetUpComingEvents(ctx, e.db)
 	if err != nil {

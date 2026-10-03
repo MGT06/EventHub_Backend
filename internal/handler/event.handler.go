@@ -142,6 +142,49 @@ func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
 	})
 }
 
+func (e *EventHandler) ToggleSavedEvent(ctx *gin.Context) {
+	idEvent, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	isSaved, er := e.es.ToggleSavedEvent(ctx.Request.Context(), idUser.(int), idEvent)
+	if er != nil {
+		log.Println(er)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	if isSaved {
+		ctx.JSON(http.StatusOK, dto.Response{
+			Success: true,
+			Message: "Success UnSaved Event",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Success Saved Event",
+	})
+}
+
 func (e *EventHandler) GetUpComingEvents(ctx *gin.Context) {
 	res, err := e.es.GetUpComingEvents(ctx.Request.Context())
 	if err != nil {
