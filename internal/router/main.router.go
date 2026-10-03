@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/MGT06/EventHub_Backend.git/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -10,6 +11,8 @@ import (
 )
 
 func MainRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
+	router.Use(middleware.Cors)
+
 	authRouter(router, db, rc)
 	EventRouter(router, db, rc)
 	CommunityRouter(router, db, rc)
