@@ -24,4 +24,5 @@ func EventRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 	eventRoute.GET("upcoming", eh.GetUpComingEvents)
 	eventRoute.GET("myevent", middleware.CheckToken(rc), eh.GetMyEvent)
 	eventRoute.POST("create", middleware.CheckToken(rc), middleware.OrganizerAccess, eh.AddEvent)
+	eventRoute.PATCH(":id/edit", middleware.CheckToken(rc), middleware.OrganizerAccess, eh.EditEvent)
 }

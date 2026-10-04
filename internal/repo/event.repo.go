@@ -207,7 +207,6 @@ func (e *EventRepo) IsSaved(ctx context.Context, db DBTX, idUser int, idEvent in
 	return isJoin, nil
 }
 
-
 func (e *EventRepo) GetUpComingEvents(ctx context.Context, db DBTX) ([]model.EventDetail, error) {
 	query := `SELECT e.id,
 	   a.name,
@@ -338,6 +337,57 @@ func (e *EventRepo) AddCategory(ctx context.Context, db DBTX, eventId int, categ
 		return fmt.Errorf("no row affected")
 	}
 
+	return nil
+}
 
+func (e *EventRepo) GetImageForUpdate(ctx context.Context, db DBTX, eventId, userId int) (string, error) {
+	query := "SELECT image_event_url FROM events WHERE id = $1 AND organizer_id = $2"
+	args := []any{eventId, userId}
+
+	var img *string
+	if err := db.QueryRow(ctx, query, args...).Scan(&img); err != nil {
+		return "", err
+	}
+	if img == nil {
+		return "", nil
+	}
+	return *img, nil
+}
+
+func (e *EventRepo) UpdateEvent(ctx context.Context, db DBTX, eventId, userId int, body model.Event) error {
+	query := `UPDATE events SET
+		community_id      = $3,
+		location_event_id = COALESCE($4, location_event_id),
+		title             = COALESCE($5, title),
+		description       = COALESCE($6, description),
+		image_event_url   = COALESCE($7, image_event_url),
+		start_at          = COALESCE($8, start_at),
+		end_at            = COALESCE($9, end_at),
+		format            = COALESCE($10, format),
+		capacity          = COALESCE($11, capacity),
+		speakers          = $12
+	WHERE id = $1 AND organizer_id = $2`
+	args := []any{eventId, userId, body.Community_id, body.Location_event_id, body.Title, body.Description, body.Image_event_url, body.Start_at, body.End_at, body.Format, body.Capacity, body.Speakers}
+
+	fmt.Println(body.Location_event_id)
+	cmt, err := db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+	return nil
+}
+
+func (e *EventRepo) DeleteCategories(ctx context.Context, db DBTX, eventId int) error {
+	query := "DELETE FROM event_categories WHERE event_id = $1"
+	args := []any{eventId}
+
+	_, err := db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
 	return nil
 }

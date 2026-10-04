@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
@@ -173,7 +174,20 @@ func (e *EventService) GetMyEvent(ctx context.Context, idUser int) ([]dto.Event,
 	return data, nil
 }
 
-func (e *EventService) AddEvent(ctx context.Context, body dto.AddEvent, userId int, imgPath string,  speakers []dto.Speaker) error {
+func (e *EventService) AddEvent(ctx context.Context, body dto.AddEvent, userId int, imgPath string) error {
+	speakers := "[]"
+	if body.Speakers != "" {
+		var list []dto.Speaker
+		if err := json.Unmarshal([]byte(body.Speakers), &list); err != nil {
+			return err
+		}
+		res, err := json.Marshal(list)
+		if err != nil {
+			return err
+		}
+		speakers = string(res)
+	}
+
 	tx, err := e.db.Begin(ctx)
 	if err != nil {
 		return err
@@ -185,23 +199,18 @@ func (e *EventService) AddEvent(ctx context.Context, body dto.AddEvent, userId i
 		}
 	}()
 
-	res, err := json.Marshal(speakers)
-	if err != nil {
-		return err
-	}
-
 	eventId, err := e.er.AddEvent(ctx, tx, model.Event{
-		Organizer_id: userId,
-		Community_id: body.CommunityId,
-		Title: body.Title,
-		Description: body.Description,
-		Image_event_url: imgPath,
-		Start_at: body.Start_at,
-		End_at: body.End_at,
-		Format: body.Format,
+		Organizer_id:      userId,
+		Community_id:      body.CommunityId,
+		Title:             body.Title,
+		Description:       body.Description,
+		Image_event_url:   imgPath,
+		Start_at:          body.Start_at,
+		End_at:            body.End_at,
+		Format:            body.Format,
 		Location_event_id: body.LocationId,
-		Capacity: body.Capacity,
-		Speakers: string(res),
+		Capacity:          body.Capacity,
+		Speakers:          string(speakers),
 	})
 	if err != nil {
 		return err
@@ -214,5 +223,75 @@ func (e *EventService) AddEvent(ctx context.Context, body dto.AddEvent, userId i
 	if err := tx.Commit(ctx); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (e *EventService) EditEvent(ctx context.Context, eventId int, body dto.EditEvent, userId int, imgPath string) error {
+	speakers := "[]"
+	if body.Speakers != nil {
+		var list []dto.Speaker
+		if err := json.Unmarshal([]byte(*body.Speakers), &list); err != nil {
+			return err
+		}
+		res, err := json.Marshal(list)
+		if err != nil {
+			return err
+		}
+		speakers = string(res)
+	}
+
+	tx, err := e.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil {
+			log.Println(err.Error())
+		}
+	}()
+
+	oldImg, err := e.er.GetImageForUpdate(ctx, tx, eventId, userId)
+	if err != nil {
+		return err
+	}
+
+	imageURL := oldImg
+	if imgPath != "" {
+		imageURL = imgPath
+	}
+
+	if err := e.er.UpdateEvent(ctx, tx, eventId, userId, model.Event{
+		Community_id:      body.CommunityId,
+		Location_event_id: *body.LocationId,
+		Title:             *body.Title,
+		Description:       *body.Description,
+		Image_event_url:   imageURL,
+		Start_at:          *body.Start_at,
+		End_at:            *body.End_at,
+		Format:            *body.Format,
+		Capacity:          *body.Capacity,
+		Speakers:          speakers,
+	}); err != nil {
+		return err
+	}
+
+	if err := e.er.DeleteCategories(ctx, tx, eventId); err != nil {
+		return err
+	}
+
+	if err := e.er.AddCategory(ctx, tx, eventId, body.Categories); err != nil {
+		return err
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+
+	if imgPath != "" && oldImg != "" {
+		if err := os.Remove(oldImg); err != nil {
+			log.Println(err.Error())
+		}
+	}
+
 	return nil
 }

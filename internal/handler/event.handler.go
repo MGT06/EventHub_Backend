@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -241,16 +240,16 @@ func (e *EventHandler) GetMyEvent(ctx *gin.Context) {
 // @Router			/event/create	[post]
 // @Security 		BearerToken
 // @Param			community_id			formData	int			false	"add community to event"
-// @Param			location_event_id		formData	int			false	"add location event"
-// @Param			title					formData	string		false	"add title event"
-// @Param			description				formData	string		false	"add desc event"
-// @Param			image					formData	file		false	"add image event"
-// @Param			start_at				formData	string		false	"add time start event" format(date-time)
-// @Param			end_at					formData	string		false	"add time end event" format(date-time)
-// @Param			format					formData	string		false	"add format event"
-// @Param			capacity				formData	string		false	"add capacity event"
+// @Param			location_event_id		formData	int			true	"add location event"
+// @Param			title					formData	string		true	"add title event"
+// @Param			description				formData	string		true	"add desc event"
+// @Param			image					formData	file		true	"add image event"
+// @Param			start_at				formData	string		true	"add time start event" format(date-time)
+// @Param			end_at					formData	string		true	"add time end event" format(date-time)
+// @Param			format					formData	string		true	"add format event"
+// @Param			capacity				formData	string		true	"add capacity event"
 // @Param			speakers				formData	string		false	"add speakers event"
-// @Param			categories				formData	[]int		false	"add categories event" collectionFormat(multi)
+// @Param			categories				formData	[]int		true	"add categories event" collectionFormat(multi)
 // @Success			200		{object}	dto.Response
 // @Failure			500		{object}	dto.Response
 func (e *EventHandler) AddEvent(ctx *gin.Context) {
@@ -274,6 +273,17 @@ func (e *EventHandler) AddEvent(ctx *gin.Context) {
 		return
 	}
 
+	ext := path.Ext(body.Image.Filename)
+	switch ext {
+		case ".jpg", ".jpeg", ".png", ".webp":
+		default:
+			ctx.JSON(http.StatusBadRequest, dto.Response{
+				Success: false,
+				Message: "Unsupported image type",
+			})
+			return
+	}
+
 	filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Title, path.Ext(body.Image.Filename))
 	filepath := path.Join("public", "img", "events", filename)
 
@@ -286,16 +296,7 @@ func (e *EventHandler) AddEvent(ctx *gin.Context) {
 		return
 	}
 
-	var speakers []dto.Speaker
-	if err := json.Unmarshal([]byte(body.Speakers), &speakers); err != nil {
-		ctx.JSON(http.StatusBadRequest, dto.Response{
-			Success: false,
-			Message: "invalid speakers format",
-		})
-		return
-	}
-
-	if err := e.es.AddEvent(ctx.Request.Context(), body, idUser.(int), filepath, speakers); err != nil {
+	if err := e.es.AddEvent(ctx.Request.Context(), body, idUser.(int), filepath); err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
 			Success: false,
@@ -307,5 +308,99 @@ func (e *EventHandler) AddEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, dto.Response{
 		Success: true,
 		Message: "Success Create Event",
+	})
+}
+
+// Edit Event
+//
+// @Summary			Edit Event
+// @Tags			event
+// @Accept			mpfd
+// @Produce			json
+// @Router			/event/{id}/edit	[patch]
+// @Security 		BearerToken
+// @Param			id						path		int			true	"event id"
+// @Param			community_id			formData	int			false	"community id"
+// @Param			location_event_id		formData	int			false	"location event id"
+// @Param			title					formData	string		false	"title event"
+// @Param			description				formData	string		false	"desc event"
+// @Param			image					formData	file		false	"image event"
+// @Param			start_at				formData	string		false	"time start event" format(date-time)
+// @Param			end_at					formData	string		false	"time end event" format(date-time)
+// @Param			format					formData	string		false	"format event"
+// @Param			capacity				formData	int			false	"capacity event"
+// @Param			speakers				formData	string		false	"speakers event (JSON)"
+// @Param			categories				formData	[]int		false	"categories event" collectionFormat(multi)
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.Response
+// @Failure			500		{object}	dto.Response
+func (e *EventHandler) EditEvent(ctx *gin.Context) {
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	eventId, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, dto.Response{
+			Success: false,
+			Message: "Invalid event id",
+		})
+		return
+	}
+
+	var body dto.EditEvent
+	if err := ctx.ShouldBindWith(&body, binding.FormMultipart); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusBadRequest, dto.Response{
+			Success: false,
+			Message: "Invalid request body",
+		})
+		return
+	}
+	
+	var filepath string
+	if body.Image != nil {
+		ext := path.Ext(body.Image.Filename)
+		switch ext {
+		case ".jpg", ".jpeg", ".png", ".webp":
+		default:
+			ctx.JSON(http.StatusBadRequest, dto.Response{
+				Success: false,
+				Message: "Unsupported image type",
+			})
+			return
+		}
+	
+		filename := fmt.Sprintf("%d_%d%s", time.Now().UnixNano(), eventId, ext)
+		filepath = path.Join("public", "img", "events", filename)
+	
+		if err := ctx.SaveUploadedFile(body.Image, filepath); err != nil {
+			log.Println(err)
+			ctx.JSON(http.StatusInternalServerError, dto.Response{
+				Success: false,
+				Message: "A system error has occurred",
+			})
+			return
+		}
+	}
+	
+
+	if err := e.es.EditEvent(ctx.Request.Context(), eventId, body, idUser.(int), filepath); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Success Update Event",
 	})
 }
