@@ -57,6 +57,36 @@ func (u *UserRepo) EditProfileUser(ctx context.Context, body model.Account, user
 	return nil
 }
 
+func (u *UserRepo) GetCurrPassword(ctx context.Context, userId int) (string, error) {
+	query := "SELECT password FROM accounts WHERE id = $1"
+	args := []any{userId}
+
+	res := u.db.QueryRow(ctx, query, args...)
+
+	var currPassword string
+	if err := res.Scan(&currPassword); err != nil {
+		return "", err
+	}
+
+	return currPassword, nil
+}
+
+func (u *UserRepo) ChangePassword(ctx context.Context, userId int, newPassword string) error {
+	query := "UPDATE accounts SET password = $1 WHERE id = $2"
+	args := []any{newPassword, userId}
+
+	cmt, err := u.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
 func (u *UserRepo) GetUserHeaderInformation(ctx context.Context, userId int) (model.Account, error) {
 	query := "SELECT name, email, avatar_url FROM accounts WHERE id = $1"
 	args := []any{userId}

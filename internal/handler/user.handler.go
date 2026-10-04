@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
+	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -130,6 +132,68 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 		Message: "Success Edit Profile",
 	})
 
+}
+
+// Change Password
+//
+// @Summary			Change Password
+// @Description		Change Password User
+// @Tags			user
+// @Accept			json
+// @Produce			json
+// @Router			/user/change-password	[post]
+// @Param			body	body	dto.ChangePassword	true	"change password"
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
+func (u *UserHandler) ChangePassword(ctx *gin.Context) {
+	idUser, exist := ctx.Get("idUser")
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, dto.Response{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	var body dto.ChangePassword
+	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	if err := u.us.ChangePassword(ctx, idUser.(int), body); err != nil {
+		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Success: false,
+				Message: "Please fill in all required fields",
+			})
+			return
+		}
+		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Success: false,
+				Message: errorTemplate.ErrEmailPasswordIncorrect.Error(),
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Change Password Success",
+	})
 }
 
 // Get User Header Information

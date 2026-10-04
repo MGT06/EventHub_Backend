@@ -12,12 +12,6 @@ type Login struct {
 	Password string `json:"password" binding:"required" example:"alfan123"`
 }
 
-type ChangePassword struct {
-	Email           string `json:"email" binding:"required,email"`
-	CurrentPassword string `json:"currentPassword" binding:"required"`
-	NewPassword     string `json:"newPassword" binding:"required,min=8"`
-}
-
 type RequestForgotPassword struct {
 	Email string `json:"email" binding:"required,email"`
 }

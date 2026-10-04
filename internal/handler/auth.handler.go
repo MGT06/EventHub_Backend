@@ -118,67 +118,6 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 	})
 }
 
-// Change Password
-//
-// @Summary			Change Password
-// @Description		Change Password User
-// @Tags			auth
-// @Accept			json
-// @Produce			json
-// @Router			/auth/change-password	[post]
-// @Param			body	body	dto.ChangePassword	true	"change password"
-// @Security 		BearerToken
-// @Success			200		{object}	dto.Response
-// @Failure			400		{object}	dto.ErrorResponse
-// @Failure			401		{object}	dto.ErrorResponse
-// @Failure			500		{object}	dto.ErrorResponse
-func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
-	idUser, exist := ctx.Get("idUser")
-	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
-			Success: false,
-			Message: "A system error has occurred",
-		})
-		return
-	}
-
-	var body dto.ChangePassword
-	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
-		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Success: false,
-			Message: "A system error has occurred",
-		})
-		return
-	}
-
-	if err := a.as.ChangePassword(ctx, idUser.(int), body); err != nil {
-		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
-			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Success: false,
-				Message: "Please fill in all required fields",
-			})
-			return
-		}
-		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
-			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
-				Success: false,
-				Message: errorTemplate.ErrEmailPasswordIncorrect.Error(),
-			})
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
-			Success: false,
-			Message: "A system error has occurred",
-		})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, dto.Response{
-		Success: true,
-		Message: "Change Password Success",
-	})
-}
 
 // Logout
 //

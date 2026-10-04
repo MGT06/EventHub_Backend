@@ -6,9 +6,11 @@ import (
 	"log"
 
 	"github.com/MGT06/EventHub_Backend.git/internal/dto"
+	errorTemplate "github.com/MGT06/EventHub_Backend.git/internal/error"
 	"github.com/MGT06/EventHub_Backend.git/internal/model"
 	"github.com/MGT06/EventHub_Backend.git/internal/repo"
 	"github.com/MGT06/EventHub_Backend.git/internal/utils"
+	"github.com/MGT06/EventHub_Backend.git/pkg"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -70,6 +72,27 @@ func (u *UserService) EditProfileUser(ctx context.Context, body dto.EditUserProf
 
 	mes := utils.DelFromRedis(ctx, u.rc, key)
 	log.Println(mes)
+
+	return nil
+}
+
+func (u *UserService) ChangePassword(ctx context.Context, userId int, body dto.ChangePassword) error {
+	if len(body.CurrentPassword) == 0 && len(body.NewPassword) == 0 {
+		return errorTemplate.ErrInvalidInputs
+	}
+
+	pass, err := u.ur.GetCurrPassword(ctx, userId)
+	if err != nil {
+		return errorTemplate.ErrEmailPasswordIncorrect
+	}
+
+	pkg.Compare(body.CurrentPassword, pass)
+
+	hash := pkg.NewHashConfig().GenHash(body.NewPassword)
+
+	if err := u.ur.ChangePassword(ctx, userId, hash); err != nil {
+		return err
+	}
 
 	return nil
 }

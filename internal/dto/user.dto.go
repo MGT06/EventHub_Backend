@@ -19,6 +19,11 @@ type EditUserProfile struct {
 	Avatar        *multipart.FileHeader `form:"avatar_url"`
 }
 
+type ChangePassword struct {
+	CurrentPassword string `json:"currentPassword" binding:"required"`
+	NewPassword     string `json:"newPassword" binding:"required,min=8"`
+}
+
 type UserHeaderInfo struct {
 	Name          string  `json:"name"`
 	Email 		  string  `json:"email"`

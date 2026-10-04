@@ -69,26 +69,6 @@ func (a *AuthService) Login(ctx context.Context, body dto.Login) (string, error)
 	return claims.GenToken()
 }
 
-func (a *AuthService) ChangePassword(ctx context.Context, userId int, body dto.ChangePassword) error {
-	if len(body.CurrentPassword) == 0 && len(body.NewPassword) == 0 {
-		return errorTemplate.ErrInvalidInputs
-	}
-
-	acc, err := a.ar.FindAccount(ctx, body.Email)
-	if err != nil {
-		return errorTemplate.ErrEmailPasswordIncorrect
-	}
-
-	pkg.Compare(body.CurrentPassword, acc.Password)
-
-	hash := pkg.NewHashConfig().GenHash(body.NewPassword)
-
-	if err := a.ar.ChangePassword(ctx, userId, hash); err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (a *AuthService) Logout(ctx context.Context, userId int, JTI string, Expired time.Duration) error {
 	key := fmt.Sprintf("eventhub:tokenBlacklist:%s", JTI)

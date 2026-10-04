@@ -19,5 +19,6 @@ func UserRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client) {
 
 	userRoute.GET("", middleware.CheckToken(rc), uh.GetProfileUser)
 	userRoute.PATCH("edit", middleware.CheckToken(rc), uh.EditProfileUser)
+	userRoute.POST("change-password", middleware.CheckToken(rc), uh.ChangePassword)
 	userRoute.GET("headerinfo", middleware.CheckToken(rc), uh.GetUserHeaderInformation)
 }
