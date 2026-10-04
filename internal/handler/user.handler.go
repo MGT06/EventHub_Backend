@@ -77,11 +77,11 @@ func (u *UserHandler) GetProfileUser(ctx *gin.Context) {
 // @Param			avatar_url		formData	file	false	"update avatar user"
 // @Success			200		{object}	dto.Response
 // @Failure			401		{object}	dto.ErrorResponse
-// @Failure			500		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	id, exists := ctx.Get("idUser")
 	if !exists {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -91,7 +91,7 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	var body dto.EditUserProfile
 	if err := ctx.ShouldBindWith(&body, binding.FormMultipart); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -106,7 +106,7 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	
 		if err := ctx.SaveUploadedFile(body.Avatar, path); err != nil {
 			log.Println(err)
-			ctx.JSON(http.StatusInternalServerError, dto.Response{
+			ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 				Success: false,
 				Message: "A system error has occurred",
 			})
@@ -118,7 +118,7 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 
 	if err := u.us.EditProfileUser(ctx, body, id.(int), filepath); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
