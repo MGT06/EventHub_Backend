@@ -39,7 +39,7 @@ func (a *AuthRepo) FindAccount(ctx context.Context, email string) (model.Account
 	args := []any{email}
 
 	var data model.Account
-	if err := a.db.QueryRow(ctx, query, args...).Scan(&data.Id, &data.Role, &data.Password); err != nil {
+	if err := a.db.QueryRow(ctx, query, args...).Scan(&data.UserId, &data.Role, &data.Password); err != nil {
 		return model.Account{}, err
 	}
 

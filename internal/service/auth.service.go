@@ -65,7 +65,7 @@ func (a *AuthService) Login(ctx context.Context, body dto.Login) (string, error)
 		return "", errorTemplate.ErrEmailPasswordIncorrect
 	}
 
-	claims := pkg.NewJWTClaims(acc.Id, acc.Role)
+	claims := pkg.NewJWTClaims(acc.UserId, acc.Role)
 	return claims.GenToken()
 }
 
