@@ -55,7 +55,7 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 	return data, err
 }
 
-func (u *UserService) EditProfileUser(ctx context.Context, body dto.SetUserProfile, userId int, AvaPath string) error {
+func (u *UserService) EditProfileUser(ctx context.Context, body dto.EditUserProfile, userId int, AvaPath string) error {
 	if err := u.ur.EditProfileUser(ctx, model.Account{
 		Name:          body.Name,
 		Bio:           body.Bio,

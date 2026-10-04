@@ -11,7 +11,7 @@ type UserProfile struct {
 	Avatar_url    *string `json:"avatar_url"`
 }
 
-type SetUserProfile struct {
+type EditUserProfile struct {
 	Name          string                `form:"name" binding:"required"`
 	Bio           *string               `form:"bio"`
 	User_location *string               `form:"user_location" binding:"omitempty,max=50"`

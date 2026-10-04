@@ -88,7 +88,7 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 		return
 	}
 
-	var body dto.SetUserProfile
+	var body dto.EditUserProfile
 	if err := ctx.ShouldBindWith(&body, binding.FormMultipart); err != nil {
 		log.Println(err)
 		ctx.JSON(http.StatusInternalServerError, dto.Response{
