@@ -99,3 +99,27 @@ func (a *AuthService) Logout(ctx context.Context, userId int, JTI string, Expire
 
 	return nil
 }
+
+func (a *AuthService) ForgotPassword(ctx context.Context, body dto.RequestForgotPassword) (dto.ResponseForgotPassword, error) {
+	acc, err := a.ar.FindAccount(ctx, body.Email)
+	if err != nil {
+		return dto.ResponseForgotPassword{}, err
+	}
+
+	data := dto.ResponseForgotPassword{
+		UserId: acc.UserId,
+	}
+
+	return data, nil
+}
+
+func (a *AuthService) ResetPassword(ctx context.Context, body dto.ResetPassword) error {
+
+	hash := pkg.NewHashConfig().GenHash(body.NewPassword)
+
+	if err := a.ar.ResetPassword(ctx, hash, body.UserId); err != nil {
+		return err
+	}
+
+	return  nil
+}

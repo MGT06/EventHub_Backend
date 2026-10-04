@@ -245,3 +245,77 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 		Message: "logout success",
 	})
 }
+
+// Forgot Password
+//
+// @Summary			Forgot Password
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/auth/forgot-password	[post]
+// @Param			body	body	dto.RequestForgotPassword	true	"forgot password"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
+func (a *AuthHandler) ForgotPassword(ctx *gin.Context) {
+	var body dto.RequestForgotPassword
+	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	res, err := a.as.ForgotPassword(ctx, body)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Data:    res,
+		Message: "Email exists, please reset your password",
+	})
+}
+
+// Reset Password
+//
+// @Summary			Reset Password
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/auth/reset-password	[post]
+// @Param			body	body	dto.ResetPassword	true	"reset password"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
+func (a *AuthHandler) ResetPassword(ctx *gin.Context) {
+	var body dto.ResetPassword
+	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	if err := a.as.ResetPassword(ctx, body); err != nil {
+		log.Println(err)
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Success: false,
+			Message: "A system error has occurred",
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, dto.Response{
+		Success: true,
+		Message: "Success Reset Password",
+	})
+}

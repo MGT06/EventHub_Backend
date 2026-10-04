@@ -61,3 +61,18 @@ func (a *AuthRepo) ChangePassword(ctx context.Context, userId int, newPassword s
 
 	return nil
 }
+
+func (a *AuthRepo) ResetPassword(ctx context.Context, newPassword string, userId int) error {
+	query := "UPDATE accounts SET password = $1 WHERE id = $2"
+	args := []any{newPassword, userId}
+
+	cmt, err := a.db.Exec(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	if cmt.RowsAffected() == 0 {
+		return fmt.Errorf("no row affected")
+	}
+	return nil
+}

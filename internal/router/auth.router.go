@@ -21,4 +21,6 @@ func authRouter(router *gin.Engine, db *pgxpool.Pool, rc *redis.Client){
 	authRoute.POST("login", ah.Login)
 	authRoute.POST("change-password", middleware.CheckToken(rc), ah.ChangePassword)
 	authRoute.POST("logout", middleware.CheckToken(rc), ah.Logout)
+	authRoute.POST("forgot-password", ah.ForgotPassword)
+	authRoute.POST("reset-password", ah.ResetPassword)
 }
