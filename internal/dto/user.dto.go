@@ -12,10 +12,10 @@ type UserProfile struct {
 }
 
 type SetUserProfile struct {
-	Name          string                `form:"name"`
+	Name          string                `form:"name" binding:"required"`
 	Bio           *string               `form:"bio"`
-	User_location *string               `form:"user_location"`
-	Position      *string               `form:"position"`
+	User_location *string               `form:"user_location" binding:"omitempty,max=50"`
+	Position      *string               `form:"position" binding:"omitempty,max=50"`
 	Avatar        *multipart.FileHeader `form:"avatar_url"`
 }
 

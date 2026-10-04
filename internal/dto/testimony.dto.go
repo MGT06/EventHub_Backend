@@ -6,5 +6,5 @@ type Testimony struct {
 }
 
 type SetTestimony struct {
-	Message    string `json:"message"`
+	Message    string `json:"message" binding:"required"`
 }
