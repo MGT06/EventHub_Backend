@@ -55,16 +55,21 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 	return data, err
 }
 
-func (u *UserService) EditProfileUser(ctx context.Context, body dto.EditUserProfile, userId int, AvaPath string) error {
+func (u *UserService) EditProfileUser(ctx context.Context, body dto.EditUserProfile, userId int, AvaPath *string) error {
 	if err := u.ur.EditProfileUser(ctx, model.Account{
 		Name:          body.Name,
 		Bio:           body.Bio,
 		User_location: body.User_location,
 		Position:      body.Position,
-		Avatar_url:    &AvaPath,
+		Avatar_url:    AvaPath,
 	}, userId); err != nil {
 		return err
 	}
+
+	key := fmt.Sprintf("eventhub:profile:%d", userId)
+
+	mes := utils.DelFromRedis(ctx, u.rc, key)
+	log.Println(mes)
 
 	return nil
 }

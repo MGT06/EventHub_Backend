@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -40,4 +41,13 @@ func SetToRedis[T any](ctx context.Context,rc *redis.Client, key string, data T,
 	}
 
 	return nil
+}
+
+func DelFromRedis(ctx context.Context, rc *redis.Client, key string) (string) {
+	res, err := rc.Del(ctx, key).Result()
+	if err != nil {
+		return err.Error()
+	}
+
+	return fmt.Sprintf("%d key berhasil di hapus", res)
 }

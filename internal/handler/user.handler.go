@@ -98,16 +98,22 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Name, path.Ext(body.Avatar.Filename))
-	filepath := path.Join("public", "img", "persons", filename)
+	var filepath *string
+	
+	if body.Avatar != nil {
+		filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Name, path.Ext(body.Avatar.Filename))
+		path := path.Join("public", "img", "persons", filename)
+	
+		if err := ctx.SaveUploadedFile(body.Avatar, path); err != nil {
+			log.Println(err)
+			ctx.JSON(http.StatusInternalServerError, dto.Response{
+				Success: false,
+				Message: "A system error has occurred",
+			})
+			return
+		}
 
-	if err := ctx.SaveUploadedFile(body.Avatar, filepath); err != nil {
-		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
-			Success: false,
-			Message: "A system error has occurred",
-		})
-		return
+		filepath = &path
 	}
 
 	if err := u.us.EditProfileUser(ctx, body, id.(int), filepath); err != nil {
