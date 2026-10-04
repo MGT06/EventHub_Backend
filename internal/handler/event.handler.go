@@ -66,11 +66,11 @@ func (e *EventHandler) GetEvents(ctx *gin.Context) {
 }
 
 func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
-
 	search := ctx.Query("search")
-	filter := ctx.Query("category")
+	category := ctx.Query("category")
+	location := ctx.Query("location")
 
-	res, err := e.es.GetEventBySearchFilter(ctx.Request.Context(), search, filter)
+	res, err := e.es.GetEventBySearchFilter(ctx.Request.Context(), search, category, location)
 
 	if err != nil {
 		log.Println(err)

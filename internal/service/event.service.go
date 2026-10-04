@@ -51,8 +51,8 @@ func (e *EventService) GetEvents(ctx context.Context, eventId int) ([]dto.Event,
 	return data, nil
 }
 
-func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string, filter string) ([]dto.Event, error) {
-	res, err := e.er.GetEventBySearchFilter(ctx, e.db, search, filter)
+func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string, category string, location string) ([]dto.Event, error) {
+	res, err := e.er.GetEventBySearchFilter(ctx, e.db, search, category, location)
 
 	if err != nil {
 		return nil, err

@@ -68,7 +68,7 @@ GROUP BY e.id, a.name, e.title, e.description, e.image_event_url, e.start_at, e.
 	return events, nil
 }
 
-func (e *EventRepo) GetEventBySearchFilter(ctx context.Context, db DBTX, search string, filter string) ([]model.EventDetail, error) {
+func (e *EventRepo) GetEventBySearchFilter(ctx context.Context, db DBTX, search string, category string, location string) ([]model.EventDetail, error) {
 	query := `SELECT e.id,
 	   a.name,
        e.title,
@@ -86,12 +86,12 @@ JOIN event_categories  ON event_categories.event_id = e.id
 JOIN categories c ON event_categories.category_id = c.id
 JOIN accounts a ON e.organizer_id = a.id
 JOIN location_event le ON e.location_event_id = le.id
-WHERE e.title ILIKE $1
+WHERE e.title ILIKE $1 AND le.city = $3
 GROUP BY e.id, a.name, e.title, e.description, e.image_event_url, e.start_at, e.end_at, e.format,
          le.city, e.capacity, e.speakers
 HAVING STRING_AGG(c.category_name, ', ') ILIKE $2;`
 
-	args := []any{"%" + search + "%", "%" + filter + "%"}
+	args := []any{"%" + search + "%", "%" + category + "%", location}
 
 	res, err := db.Query(ctx, query, args...)
 	if err != nil {
