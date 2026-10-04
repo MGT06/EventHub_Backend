@@ -24,11 +24,22 @@ func NewAuthHandler(as *service.AuthService) *AuthHandler {
 	}
 }
 
+// Register
+//
+// @Summary			Register
+// @Description		Register Account
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/auth/register	[post]
+// @Param			newAccount	body	dto.Register	true	"Register"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AuthHandler) Register(ctx *gin.Context) {
 	var newAccount dto.Register
 	if err := ctx.ShouldBindWith(&newAccount, binding.JSON); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -37,7 +48,7 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 
 	if err := a.as.Register(ctx.Request.Context(), newAccount); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -60,14 +71,14 @@ func (a *AuthHandler) Register(ctx *gin.Context) {
 // @Router			/auth/login	[post]
 // @Param			account	body	dto.Login	true	"Login"
 // @Success			200		{object}	dto.Response
-// @Failure			400		{object}	dto.Response
-// @Failure			401		{object}	dto.Response
-// @Failure			500		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AuthHandler) Login(ctx *gin.Context) {
 	var account dto.Login
 	if err := ctx.ShouldBindWith(&account, binding.JSON); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "Invalid email format",
 		})
@@ -78,20 +89,20 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
-			ctx.JSON(http.StatusBadRequest, dto.Response{
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
 				Success: false,
 				Message: "Please fill in all required fields",
 			})
 			return
 		}
 		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
-			ctx.JSON(http.StatusUnauthorized, dto.Response{
+			ctx.JSON(http.StatusUnauthorized, dto.ErrorResponse{
 				Success: false,
 				Message: err.Error(),
 			})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -107,6 +118,20 @@ func (a *AuthHandler) Login(ctx *gin.Context) {
 	})
 }
 
+// Change Password
+//
+// @Summary			Change Password
+// @Description		Change Password User
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/auth/change-password	[post]
+// @Param			body	body	dto.ChangePassword	true	"change password"
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
@@ -120,7 +145,7 @@ func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
 	var body dto.ChangePassword
 	if err := ctx.ShouldBindWith(&body, binding.JSON); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -129,20 +154,20 @@ func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
 
 	if err := a.as.ChangePassword(ctx, idUser.(int), body); err != nil {
 		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
-			ctx.JSON(http.StatusBadRequest, dto.Response{
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
 				Success: false,
 				Message: "Please fill in all required fields",
 			})
 			return
 		}
 		if errors.Is(err, errorTemplate.ErrEmailPasswordIncorrect) {
-			ctx.JSON(http.StatusBadRequest, dto.Response{
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
 				Success: false,
 				Message: errorTemplate.ErrEmailPasswordIncorrect.Error(),
 			})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -155,10 +180,23 @@ func (a *AuthHandler) ChangePassword(ctx *gin.Context) {
 	})
 }
 
+// Logout
+//
+// @Summary			Logut
+// @Description		User Logout
+// @Tags			auth
+// @Accept			json
+// @Produce			json
+// @Router			/auth/logout	[post]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AuthHandler) Logout(ctx *gin.Context) {
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -167,7 +205,7 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 
 	jwtID, exist := ctx.Get("jti")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -176,7 +214,7 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 
 	exp, exist := ctx.Get("exp")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -185,7 +223,7 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 
 	expTime, ok := exp.(time.Time)
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -195,7 +233,7 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 	ttl := time.Until(expTime)
 
 	if err := a.as.Logout(ctx, idUser.(int), jwtID.(string), ttl); err != nil {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})

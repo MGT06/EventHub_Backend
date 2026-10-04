@@ -19,11 +19,20 @@ func NewAdminHandler(as *service.AdminService) *AdminHandler {
 	}
 }
 
+// Get Data Dashboard Admin
+//
+// @Summary			Get Data Dashboard Admin
+// @Tags			admin
+// @Produce			json
+// @Router			/admin	[get]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (a *AdminHandler) GetDataDashboard(ctx *gin.Context) {
 	res, err := a.as.GetDataDashboard(ctx.Request.Context())
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})

@@ -19,10 +19,19 @@ func NewOrganizerHandler(os *service.OrganizerService) *OrganizerHandler {
 	}
 }
 
+// Get Data Dashboard Organizer
+//
+// @Summary			Get Data Dashboard Organizer
+// @Tags			organizer
+// @Produce			json
+// @Router			/organizer	[get]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (o *OrganizerHandler) GetDataDashboard(ctx *gin.Context) {
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -32,7 +41,7 @@ func (o *OrganizerHandler) GetDataDashboard(ctx *gin.Context) {
 	res, err := o.os.GetDataDashboard(ctx.Request.Context(), idUser.(int))
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})

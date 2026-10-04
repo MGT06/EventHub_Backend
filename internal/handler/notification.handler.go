@@ -19,11 +19,21 @@ func NewNotificationHandler(ns *service.NotificationService) *NotificationHandle
 	}
 }
 
+// Get User Notification
+//
+// @Summary			Get User Notification
+// @Tags			notification
+// @Produce			json
+// @Router			/notification	[get]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (n *NotificationHandler) GetMyNotification(ctx *gin.Context) {
 	id, exists := ctx.Get("idUser")
 
 	if !exists {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -33,7 +43,7 @@ func (n *NotificationHandler) GetMyNotification(ctx *gin.Context) {
 	res, err := n.ns.GetMyNotification(ctx.Request.Context(), id.(int))
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})

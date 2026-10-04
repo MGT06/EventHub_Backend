@@ -22,12 +22,20 @@ func NewTestimonyHandler(ts *service.TestimonyService) *TestimonyHandler {
 	}
 }
 
+// Get Testimony
+//
+// @Summary			Get Testimony App
+// @Tags			testimony
+// @Produce			json
+// @Router			/testimony	[get]
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (t *TestimonyHandler) GetTestimony(ctx *gin.Context) {
 	res, err := t.ts.GetTestimony(ctx.Request.Context())
 
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: true,
 			Message: "A system error has occurred",
 		})
@@ -41,10 +49,24 @@ func (t *TestimonyHandler) GetTestimony(ctx *gin.Context) {
 	})
 }
 
+// Set Testimony
+//
+// @Summary			Set Testimony App
+// @Tags			testimony
+// @Accept			json
+// @Produce			json
+// @Router			/testimony/send-testimony	[post]
+// @Param			newTestimony	body	dto.SetTestimony	true	"Set Testimony App"
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			400		{object}	dto.ErrorResponse
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			409		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (t *TestimonyHandler) SetTestimony(ctx *gin.Context) {
 	userId, exist := ctx.Get("idUser")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -54,7 +76,7 @@ func (t *TestimonyHandler) SetTestimony(ctx *gin.Context) {
 	var newTestimony dto.SetTestimony
 	if err := ctx.ShouldBindWith(&newTestimony, binding.JSON); err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -65,20 +87,20 @@ func (t *TestimonyHandler) SetTestimony(ctx *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		if errors.Is(err, errorTemplate.ErrInvalidInputs) {
-			ctx.JSON(http.StatusBadRequest, dto.Response{
+			ctx.JSON(http.StatusBadRequest, dto.ErrorResponse{
 				Success: false,
 				Message: "Please fill in all required fields",
 			})
 			return
 		}
 		if errors.Is(err, errorTemplate.ErrDoubleSubmittedTestimony) {
-			ctx.JSON(http.StatusConflict, dto.Response{
+			ctx.JSON(http.StatusConflict, dto.ErrorResponse{
 				Success: false,
 				Message: errorTemplate.ErrDoubleSubmittedTestimony.Error(),
 			})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: true,
 			Message: "A system error has occurred",
 		})

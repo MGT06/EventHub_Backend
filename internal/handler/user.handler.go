@@ -23,10 +23,20 @@ func NewUserHandler(us *service.UserService) *UserHandler {
 	}
 }
 
+// Get User Profile
+//
+// @Summary			Get User Profile
+// @Tags			user
+// @Produce			json
+// @Router			/user	[get]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (u *UserHandler) GetProfileUser(ctx *gin.Context) {
 	id, exists := ctx.Get("idUser")
 	if !exists {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -37,7 +47,7 @@ func (u *UserHandler) GetProfileUser(ctx *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -66,6 +76,7 @@ func (u *UserHandler) GetProfileUser(ctx *gin.Context) {
 // @Param			position		formData	string	false	"update position user"
 // @Param			avatar_url		formData	file	false	"update avatar user"
 // @Success			200		{object}	dto.Response
+// @Failure			401		{object}	dto.ErrorResponse
 // @Failure			500		{object}	dto.Response
 func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	id, exists := ctx.Get("idUser")
@@ -115,10 +126,20 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 
 }
 
+// Get User Header Information
+//
+// @Summary			Get User Header Information
+// @Tags			user
+// @Produce			json
+// @Router			/user/headerinfo	[get]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (u *UserHandler) GetUserHeaderInformation(ctx *gin.Context) {
 	id, exists := ctx.Get("idUser")
 	if !exists {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
