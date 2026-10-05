@@ -1,3 +1,8 @@
+CREATE TYPE public.event_format AS ENUM (
+    'offline',
+    'online'
+);
+
 CREATE TABLE public.events (
     id integer NOT NULL,
     organizer_id integer NOT NULL,

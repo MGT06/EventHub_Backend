@@ -1,5 +1,18 @@
+CREATE TYPE public.role_type AS ENUM (
+    'attendee',
+    'organizer',
+    'admin'
+);
+
+CREATE TYPE public.account_status AS ENUM (
+    'active',
+    'inactive',
+    'suspended'
+);
+
+
 CREATE TABLE public.accounts (
-    id integer NOT NULL,
+    id integer NOT NULL PRIMARY KEY,
     name character varying(100) NOT NULL,
     email character varying(255) NOT NULL,
     bio text,
@@ -16,3 +29,6 @@ CREATE TABLE public.accounts (
 
 ALTER TABLE ONLY public.accounts
     ADD CONSTRAINT accounts_email_key UNIQUE (email);
+
+ALTER TABLE ONLY public.accounts
+    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);

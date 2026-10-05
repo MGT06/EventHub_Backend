@@ -1,3 +1,11 @@
+CREATE TYPE public.notification_type AS ENUM (
+    'event_reminder',
+    'registration',
+    'community',
+    'event_updated',
+    'discussion_reply'
+);
+
 CREATE TABLE public.notifications (
     id integer NOT NULL,
     account_id integer NOT NULL,
