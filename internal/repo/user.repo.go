@@ -38,10 +38,10 @@ func (u *UserRepo) EditProfileUser(ctx context.Context, body model.Account, user
 	query := `UPDATE accounts 
     SET 
 		name = COALESCE($1, name),
-        bio = COALESCE($2, bio), 
-        user_location = COALESCE($3, user_location), 
-        position = COALESCE($4, position), 
-        avatar_url = COALESCE($5, avatar_url) 
+        bio = $2, 
+        user_location = $3,
+        position = $4, 
+        avatar_url = $5 
     WHERE id = $6`
 	args := []any{body.Name, body.Bio, body.User_location, body.Position, body.Avatar_url, userId}
 
@@ -88,13 +88,13 @@ func (u *UserRepo) ChangePassword(ctx context.Context, userId int, newPassword s
 }
 
 func (u *UserRepo) GetUserHeaderInformation(ctx context.Context, userId int) (model.Account, error) {
-	query := "SELECT name, email, avatar_url FROM accounts WHERE id = $1"
+	query := "SELECT name, email, avatar_url, role FROM accounts WHERE id = $1"
 	args := []any{userId}
 
 	res := u.db.QueryRow(ctx, query, args...)
 	
 	var userInformation model.Account
-	if err := res.Scan(&userInformation.Name, &userInformation.Email, &userInformation.Avatar_url); err != nil {
+	if err := res.Scan(&userInformation.Name, &userInformation.Email, &userInformation.Avatar_url, &userInformation.Role); err != nil {
 		return model.Account{}, err
 	}
 

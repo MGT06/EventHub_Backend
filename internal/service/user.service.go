@@ -107,6 +107,7 @@ func (u *UserService) GetUserHeaderInformation(ctx context.Context, userId int) 
 		Name: res.Name,
 		Email: res.Email,
 		Avatar_url: res.Avatar_url,
+		Role: res.Role,
 	}
 
 	return data, nil

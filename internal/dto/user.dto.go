@@ -4,7 +4,7 @@ import "mime/multipart"
 
 type UserProfile struct {
 	Name          string  `json:"name"`
-	Email 		  string  `json:"email"`
+	Email         string  `json:"email"`
 	Bio           *string `json:"bio"`
 	User_location *string `json:"user_location"`
 	Position      *string `json:"position"`
@@ -25,7 +25,8 @@ type ChangePassword struct {
 }
 
 type UserHeaderInfo struct {
-	Name          string  `json:"name"`
-	Email 		  string  `json:"email"`
-	Avatar_url    *string `json:"avatar_url"`
+	Name       string  `json:"name"`
+	Email      string  `json:"email"`
+	Avatar_url *string `json:"avatar_url"`
+	Role       string  `json:"role"`
 }
