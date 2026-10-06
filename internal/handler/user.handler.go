@@ -103,6 +103,17 @@ func (u *UserHandler) EditProfileUser(ctx *gin.Context) {
 	var filepath *string
 	
 	if body.Avatar != nil {
+		ext := path.Ext(body.Avatar.Filename)
+		switch ext {
+		case ".jpg", ".jpeg", ".png", ".webp":
+		default:
+			ctx.JSON(http.StatusBadRequest, dto.Response{
+				Success: false,
+				Message: "Unsupported image type",
+			})
+			return
+		}
+
 		filename := fmt.Sprintf("%d_%s%s", time.Now().UnixNano(), body.Name, path.Ext(body.Avatar.Filename))
 		path := path.Join("public", "img", "persons", filename)
 	
