@@ -29,16 +29,17 @@ func NewEventHandler(es *service.EventService) *EventHandler {
 // @Summary			Get Event
 // @Description		Get event detail using ID event
 // @Tags			event
+// @Accept 			json
 // @Produce			json
 // @Router			/event/detail/{id}	[get]
-// @Param			id		path		int		true	"Event ID"
+// @Param 			id		path	int		true	"Event Id"
 // @Success			200		{object}	dto.Response
-// @Failure			500		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (e *EventHandler) GetEvents(ctx *gin.Context) {
 	eventId, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -49,7 +50,7 @@ func (e *EventHandler) GetEvents(ctx *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -64,6 +65,17 @@ func (e *EventHandler) GetEvents(ctx *gin.Context) {
 
 }
 
+// Get Event
+//
+// @Summary			Get Event By Search And Filter
+// @Tags			event
+// @Produce			json
+// @Router			/event	[get]
+// @Param			search			query		string		false	"search query param"
+// @Param			category		query		string		false	"category query param"
+// @Param			location		query		string		false	"location query param"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
 	search := ctx.Query("search")
 	category := ctx.Query("category")
@@ -73,7 +85,7 @@ func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -98,11 +110,11 @@ func (e *EventHandler) GetEventBySearchFilter(ctx *gin.Context) {
 // @Security 		BearerToken
 // @Param			id		path	int	true	"Event ID"
 // @Success			200		{object}	dto.Response
-// @Failure			500		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
 	idEvent, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -111,7 +123,7 @@ func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
 
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -120,7 +132,7 @@ func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
 	isJoin, er := e.es.ToggleJoinEvent(ctx.Request.Context(), idUser.(int), idEvent)
 	if er != nil {
 		log.Println(er)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -141,10 +153,21 @@ func (e *EventHandler) ToggleJoinEvent(ctx *gin.Context) {
 	})
 }
 
+// Toggle Saved Event
+//
+// @Summary			Saved and Unsaved Event
+// @Description		Toggle to Saved and Unsaved Event
+// @Tags			event
+// @Produce			json
+// @Router			/event/save/{id}		[post]
+// @Security 		BearerToken
+// @Param			id		path	int	true	"Event ID"
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (e *EventHandler) ToggleSavedEvent(ctx *gin.Context) {
 	idEvent, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -153,7 +176,7 @@ func (e *EventHandler) ToggleSavedEvent(ctx *gin.Context) {
 
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -163,7 +186,7 @@ func (e *EventHandler) ToggleSavedEvent(ctx *gin.Context) {
 	isSaved, er := e.es.ToggleSavedEvent(ctx.Request.Context(), idUser.(int), idEvent)
 	if er != nil {
 		log.Println(er)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -184,11 +207,19 @@ func (e *EventHandler) ToggleSavedEvent(ctx *gin.Context) {
 	})
 }
 
+// Get Upcoming Events
+//
+// @Summary			Get Upcoming Events
+// @Tags			event
+// @Produce			json
+// @Router			/event/upcoming	[get]
+// @Success			200		{object}	dto.Response
+// @Failure			500		{object}	dto.ErrorResponse
 func (e *EventHandler) GetUpComingEvents(ctx *gin.Context) {
 	res, err := e.es.GetUpComingEvents(ctx.Request.Context())
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -203,10 +234,21 @@ func (e *EventHandler) GetUpComingEvents(ctx *gin.Context) {
 
 }
 
+// Get Event
+//
+// @Summary			Get Event
+// @Description		Get event detail using ID event
+// @Tags			event
+// @Produce			json
+// @Router			/event/myevent	[get]
+// @Security 		BearerToken
+// @Success			200		{object}	dto.Response
+// @Failure			401		{object}	dto.ErrorResponse
+// @Failure			500		{object}	dto.ErrorResponse
 func (e *EventHandler) GetMyEvent(ctx *gin.Context) {
 	idUser, exist := ctx.Get("idUser")
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
@@ -216,7 +258,7 @@ func (e *EventHandler) GetMyEvent(ctx *gin.Context) {
 	res, err := e.es.GetMyEvent(ctx.Request.Context(), idUser.(int))
 	if err != nil {
 		log.Println(err)
-		ctx.JSON(http.StatusInternalServerError, dto.Response{
+		ctx.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Success: false,
 			Message: "A system error has occurred",
 		})
