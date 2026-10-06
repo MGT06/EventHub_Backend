@@ -179,7 +179,7 @@ func (a *AuthHandler) Logout(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, dto.Response{
+	ctx.JSON(http.StatusNoContent, dto.Response{
 		Success: true,
 		Message: "logout success",
 	})
