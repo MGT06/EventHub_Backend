@@ -1,0 +1,887 @@
+basePath: /
+definitions:
+  dto.ChangePassword:
+    properties:
+      currentPassword:
+        type: string
+      newPassword:
+        minLength: 8
+        type: string
+    required:
+    - currentPassword
+    - newPassword
+    type: object
+  dto.ErrorResponse:
+    properties:
+      message:
+        example: error
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  dto.Login:
+    properties:
+      email:
+        example: alfan@gmail.com
+        type: string
+      password:
+        example: alfan123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.Register:
+    properties:
+      email:
+        type: string
+      fullname:
+        minLength: 5
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - fullname
+    - password
+    type: object
+  dto.RequestForgotPassword:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  dto.ResetPassword:
+    properties:
+      id:
+        type: integer
+      newPassword:
+        minLength: 8
+        type: string
+    required:
+    - id
+    - newPassword
+    type: object
+  dto.Response:
+    properties:
+      data: {}
+      message:
+        example: success
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  dto.SetTestimony:
+    properties:
+      message:
+        type: string
+    required:
+    - message
+    type: object
+host: localhost:9000
+info:
+  contact: {}
+  description: This is a sample server celler server.
+  title: Event Hub API
+  version: "1.0"
+paths:
+  /admin:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get Data Dashboard Admin
+      tags:
+      - admin
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: forgot password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RequestForgotPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Forgot Password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login using email and password
+      parameters:
+      - description: Login
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: User Logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Logut
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register Account
+      parameters:
+      - description: Register
+        in: body
+        name: newAccount
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Register'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Register
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: reset password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Reset Password
+      tags:
+      - auth
+  /community:
+    get:
+      parameters:
+      - description: key Search in query param
+        in: query
+        name: search
+        type: string
+      - description: key category in query param
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Community by Search & Filter
+      tags:
+      - community
+  /community/detail/{id}:
+    get:
+      description: Get Detail Community by Id Community
+      parameters:
+      - description: community id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Detail Community
+      tags:
+      - community
+  /community/join/{id}:
+    post:
+      parameters:
+      - description: community id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Toggle Join Commmunity
+      tags:
+      - community
+  /community/members/{id}:
+    get:
+      parameters:
+      - description: community id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Community Members
+      tags:
+      - community
+  /community/popular:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Popular Community
+      tags:
+      - community
+  /event:
+    get:
+      parameters:
+      - description: search query param
+        in: query
+        name: search
+        type: string
+      - description: category query param
+        in: query
+        name: category
+        type: string
+      - description: location query param
+        in: query
+        name: location
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Event By Search And Filter
+      tags:
+      - event
+  /event/{id}/edit:
+    patch:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: event id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: community id
+        in: formData
+        name: community_id
+        type: integer
+      - description: location event id
+        in: formData
+        name: location_event_id
+        type: integer
+      - description: title event
+        in: formData
+        name: title
+        type: string
+      - description: desc event
+        in: formData
+        name: description
+        type: string
+      - description: image event
+        in: formData
+        name: image
+        type: file
+      - description: time start event
+        format: date-time
+        in: formData
+        name: start_at
+        type: string
+      - description: time end event
+        format: date-time
+        in: formData
+        name: end_at
+        type: string
+      - description: format event
+        in: formData
+        name: format
+        type: string
+      - description: capacity event
+        in: formData
+        name: capacity
+        type: integer
+      - description: speakers event (JSON)
+        in: formData
+        name: speakers
+        type: string
+      - collectionFormat: multi
+        description: categories event
+        in: formData
+        items:
+          type: integer
+        name: categories
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerToken: []
+      summary: Edit Event
+      tags:
+      - event
+  /event/create:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: add community to event
+        in: formData
+        name: community_id
+        type: integer
+      - description: add location event
+        in: formData
+        name: location_event_id
+        required: true
+        type: integer
+      - description: add title event
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: add desc event
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: add image event
+        in: formData
+        name: image
+        required: true
+        type: file
+      - description: add time start event
+        format: date-time
+        in: formData
+        name: start_at
+        required: true
+        type: string
+      - description: add time end event
+        format: date-time
+        in: formData
+        name: end_at
+        required: true
+        type: string
+      - description: add format event
+        in: formData
+        name: format
+        required: true
+        type: string
+      - description: add capacity event
+        in: formData
+        name: capacity
+        required: true
+        type: string
+      - description: add speakers event
+        in: formData
+        name: speakers
+        type: string
+      - collectionFormat: multi
+        description: add categories event
+        in: formData
+        items:
+          type: integer
+        name: categories
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.Response'
+      security:
+      - BearerToken: []
+      summary: Create New Event
+      tags:
+      - event
+  /event/detail/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get event detail using ID event
+      parameters:
+      - description: Event Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Event
+      tags:
+      - event
+  /event/join/{id}:
+    post:
+      description: Toggle to Join and Leave Event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Join and Leave Event
+      tags:
+      - event
+  /event/myevent:
+    get:
+      description: Get event detail using ID event
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get Event
+      tags:
+      - event
+  /event/save/{id}:
+    post:
+      description: Toggle to Saved and Unsaved Event
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Saved and Unsaved Event
+      tags:
+      - event
+  /event/upcoming:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Upcoming Events
+      tags:
+      - event
+  /notification:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get User Notification
+      tags:
+      - notification
+  /organizer:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get Data Dashboard Organizer
+      tags:
+      - organizer
+  /testimony:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Get Testimony App
+      tags:
+      - testimony
+  /testimony/send-testimony:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Set Testimony App
+        in: body
+        name: newTestimony
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetTestimony'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Set Testimony App
+      tags:
+      - testimony
+  /user:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get User Profile
+      tags:
+      - user
+  /user/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change Password User
+      parameters:
+      - description: change password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Change Password
+      tags:
+      - user
+  /user/edit:
+    patch:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: update name user
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: update bio user
+        in: formData
+        name: bio
+        type: string
+      - description: update location user
+        in: formData
+        name: user_location
+        type: string
+      - description: update position user
+        in: formData
+        name: position
+        type: string
+      - description: update avatar user
+        in: formData
+        name: avatar_url
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Update user info
+      tags:
+      - user
+  /user/headerinfo:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerToken: []
+      summary: Get User Header Information
+      tags:
+      - user
+securityDefinitions:
+  BearerToken:
+    description: Bearer token used as identitiy for access resource
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
