@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -81,23 +82,27 @@ func (e *EventService) GetEventBySearchFilter(ctx context.Context, search string
 }
 
 func (e *EventService) ToggleJoinEvent(ctx context.Context, idUser int, idEvent int) (bool, error) {
-	isJoin, err := e.er.IsJoin(ctx, e.db, idUser, idEvent)
+	res, err := e.er.IsCanJoin(ctx, e.db, idUser, idEvent)
 	if err != nil {
-		return false, err
+		return res.IsJoin, err
 	}
 
-	if isJoin {
+	if (res.Cap - res.Attendess) == 0 {
+		return res.IsJoin, fmt.Errorf("Event is fuul")
+	}
+
+	if res.IsJoin {
 		if err := e.er.LeaveEvent(ctx, e.db, idUser, idEvent); err != nil {
-			return false, err
+			return res.IsJoin, err
 		}
-		return isJoin, nil
+		return res.IsJoin, nil
 	}
 
 	if err := e.er.JoinEvent(ctx, e.db, idUser, idEvent); err != nil {
-		return false, err
+		return res.IsJoin, err
 	}
 
-	return isJoin, nil
+	return res.IsJoin, nil
 }
 
 func (e *EventService) ToggleSavedEvent(ctx context.Context, idUser int, idEvent int) (bool, error) {
