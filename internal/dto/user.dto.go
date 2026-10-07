@@ -9,6 +9,7 @@ type UserProfile struct {
 	User_location *string `json:"user_location"`
 	Position      *string `json:"position"`
 	Avatar_url    *string `json:"avatar_url"`
+	Role          string  `json:"role"`
 }
 
 type EditUserProfile struct {

@@ -31,7 +31,7 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 
 	if result, err := utils.GetFromRedis[dto.UserProfile](ctx, u.rc, key); err != nil {
 		log.Println(err)
-	}else {
+	} else {
 		return result, nil
 	}
 
@@ -41,13 +41,16 @@ func (u *UserService) GetProfileUser(ctx context.Context, userId int) (dto.UserP
 		return dto.UserProfile{}, err
 	}
 
+	log.Println(res.Role)
+
 	data := dto.UserProfile{
 		Name:          res.Name,
-		Email:	 	   res.Email,
+		Email:         res.Email,
 		Bio:           res.Bio,
 		User_location: res.User_location,
 		Position:      res.Position,
 		Avatar_url:    res.Avatar_url,
+		Role:          res.Role,
 	}
 
 	if err := utils.SetToRedis(ctx, u.rc, key, data); err != nil {
@@ -104,10 +107,10 @@ func (u *UserService) GetUserHeaderInformation(ctx context.Context, userId int) 
 	}
 
 	data := dto.UserHeaderInfo{
-		Name: res.Name,
-		Email: res.Email,
+		Name:       res.Name,
+		Email:      res.Email,
 		Avatar_url: res.Avatar_url,
-		Role: res.Role,
+		Role:       res.Role,
 	}
 
 	return data, nil
