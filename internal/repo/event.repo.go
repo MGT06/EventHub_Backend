@@ -86,12 +86,12 @@ JOIN event_categories  ON event_categories.event_id = e.id
 JOIN categories c ON event_categories.category_id = c.id
 JOIN accounts a ON e.organizer_id = a.id
 JOIN location_event le ON e.location_event_id = le.id
-WHERE e.title ILIKE $1 AND le.city = $3
+WHERE e.title ILIKE $1 AND le.city ILIKE $3
 GROUP BY e.id, a.name, e.title, e.description, e.image_event_url, e.start_at, e.end_at, e.format,
          le.city, e.capacity, e.speakers
 HAVING STRING_AGG(c.category_name, ', ') ILIKE $2;`
 
-	args := []any{"%" + search + "%", "%" + category + "%", location}
+	args := []any{"%" + search + "%", "%" + category + "%", "%" + location + "%"}
 
 	res, err := db.Query(ctx, query, args...)
 	if err != nil {
@@ -147,18 +147,35 @@ func (e *EventRepo) LeaveEvent(ctx context.Context, db DBTX, idUser int, idEvent
 	return nil
 }
 
-func (e *EventRepo) IsJoin(ctx context.Context, db DBTX, idUser int, idEvent int) (bool, error) {
-	query := "SELECT EXISTS (SELECT 1 FROM join_event WHERE account_id = $1 AND event_id = $2)"
+type isCanJoin struct {
+	Cap int
+	Attendess int
+	IsJoin bool
+}
+
+func (e *EventRepo) IsCanJoin(ctx context.Context, db DBTX, idUser int, idEvent int) (isCanJoin, error) {
+	query := `SELECT 
+    e.capacity,
+    COUNT(je.account_id) AS total_joined,
+    EXISTS (
+        SELECT 1 FROM join_event 
+        WHERE account_id = $1 AND event_id = e.id
+    ) AS is_joined
+FROM events e
+LEFT JOIN join_event je ON e.id = je.event_id
+WHERE e.id = $2
+GROUP BY e.id, e.capacity;`
+
 	args := []any{idUser, idEvent}
 
 	res := db.QueryRow(ctx, query, args...)
 
-	var isJoin bool
-	if err := res.Scan(&isJoin); err != nil {
-		return false, err
+	var result isCanJoin
+	if err := res.Scan(&result.Cap, &result.Attendess, &result.IsJoin); err != nil {
+		return isCanJoin{}, err
 	}
 
-	return isJoin, nil
+	return result, nil
 }
 
 func (e *EventRepo) SavedEvent(ctx context.Context, db DBTX, idUser int, idEvent int) error {
